@@ -1,0 +1,38 @@
+package org.firstinspires.ftc.teamcode.test;
+
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.seattlesolvers.solverslib.command.RunCommand;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+
+import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
+import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
+import org.firstinspires.ftc.teamcode.config.OpModeCommand;
+
+
+@Config
+@TeleOp(name = "shooter test")
+public class shooter_test extends OpModeCommand {
+
+    GamepadEx gamepadEx1;
+    public static double TV = 0;
+
+    @Override
+    public void initialize() {
+        new RunCommand(()->{
+            telemetry.update();
+        }).schedule();
+        gamepadEx1 = new GamepadEx(gamepad1);
+
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(new TurretAutoLLCMD(turretSubsystem, llSubsystem), new RunCommand(() -> {
+            turretSubsystem.setTurretPower(gamepad1.left_stick_x);
+        }));
+
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new ShooterShootCmd(shooterSubsystem, () -> TV));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem,llSubsystem));
+    }
+}
