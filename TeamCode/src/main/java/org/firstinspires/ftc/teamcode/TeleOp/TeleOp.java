@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
+import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
+import org.firstinspires.ftc.teamcode.commands.hook.HookUpCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeOutCMD;
@@ -55,6 +58,18 @@ public class TeleOp extends OpModeCommand {
         );
 
         Sorter3.whenHeld(new SpinSorterCMD(spindexSubsystem,spindexSubsystem.TPos));
+
+        Button hookUp = new GamepadButton(
+                Garra,GamepadKeys.Button.RIGHT_BUMPER
+        );
+
+        hookUp.whenPressed(new HookUpCMD(hookSubsystem));
+
+        Button hookDown = new GamepadButton(
+                Garra,GamepadKeys.Button.LEFT_BUMPER
+        );
+
+        hookDown.whenPressed(new HookDownCMD(hookSubsystem));
 
 
 

@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LLSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
@@ -28,6 +29,7 @@ public abstract class OpModeCommand extends OpMode {
 
     public SpindexSubsystem spindexSubsystem;
     public LLSubsystem llSubsystem;
+    public HookSubsystem hookSubsystem;
 
     public IMU imu;
     //reinicia la lista de comandos
@@ -59,7 +61,8 @@ public abstract class OpModeCommand extends OpMode {
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
                 turretSubsystem = new TurretSubsystem(hardwareMap),
                 spindexSubsystem = new SpindexSubsystem(hardwareMap),
-                llSubsystem = new LLSubsystem(hardwareMap, Alliance.ANY)
+                llSubsystem = new LLSubsystem(hardwareMap, Alliance.ANY),
+                hookSubsystem = new HookSubsystem(hardwareMap)
         );
 
         imu = hardwareMap.get(IMU.class, "imu");
