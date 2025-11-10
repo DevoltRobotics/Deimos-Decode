@@ -57,12 +57,12 @@ public abstract class OpModeCommand extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         register(
+                hookSubsystem = new HookSubsystem(hardwareMap),
                 intakeSubsystem = new IntakeSubsystem(hardwareMap),
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
                 turretSubsystem = new TurretSubsystem(hardwareMap),
-                spindexSubsystem = new SpindexSubsystem(hardwareMap),
-                llSubsystem = new LLSubsystem(hardwareMap, Alliance.ANY),
-                hookSubsystem = new HookSubsystem(hardwareMap)
+                spindexSubsystem = new SpindexSubsystem(hardwareMap,hookSubsystem),
+                llSubsystem = new LLSubsystem(hardwareMap, Alliance.ANY)
         );
 
         imu = hardwareMap.get(IMU.class, "imu");

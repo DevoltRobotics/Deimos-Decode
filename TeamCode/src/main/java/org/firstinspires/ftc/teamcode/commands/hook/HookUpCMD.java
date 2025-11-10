@@ -20,6 +20,6 @@ public class HookUpCMD extends CommandBase {
 
     @Override
     public boolean isFinished(){
-        return subsystem.hook.getPosition() >= 0.199;
+        return true;
     }
 }

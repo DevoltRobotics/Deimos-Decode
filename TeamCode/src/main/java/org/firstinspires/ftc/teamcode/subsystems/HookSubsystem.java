@@ -7,18 +7,22 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 public class HookSubsystem extends SubsystemBase {
 
     public Servo hook;
+    public int nFlick = 0;
 
     public HookSubsystem(HardwareMap hMap){
         hook = hMap.get(Servo.class,"gancho");
-        hook.setDirection(Servo.Direction.REVERSE);
 
     }
 
     public void hookUp(){
-        hook.setPosition(0.2);
+        hook.setPosition(0);
+    }
+
+    public void addnFLick(){
+        nFlick += 1;
     }
 
     public void hookDown(){
-        hook.setPosition(0.1);
+        hook.setPosition(0.5);
     }
 }
