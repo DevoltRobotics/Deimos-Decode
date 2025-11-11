@@ -46,7 +46,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
     // Estabilidad / antifricción
     public static double K_STATIC = 0.0;                 // empujón anti-fricción
-    public static double ERROR_DEADBAND_RAD = 0.08;      // ~ 4.58°
+    public static double ERROR_DEADBAND_RAD = 0.05;      // ~ 4.58°
     public static double MIN_SERVO = 0.05;
     public static double MAX_SERVO = 1.0;
 
@@ -67,10 +67,9 @@ public class SpindexSubsystem extends SubsystemBase {
 
     // ----------------- Objetivos (en radianes) -----------------
     // NOTA: todo interno en radianes.
-    public double offsetRad = Math.toRadians(217.85);         // home
-    public double FPosRad   = Math.toRadians(32);             // posición de "ready to shoot"
-    public double SPosRad   = normalizeRadians(FPosRad + 2*Math.PI/3.0); // +120°
-    public double TPosRad   = normalizeRadians(SPosRad + 2*Math.PI/3.0); // +120°
+    public double offsetRad =   0.6073;         // home
+    public double FPosRad   = offsetRad + Math.toRadians(60) ;             // posición de "ready to shoot"
+
 
     private double targetPosRad = 0.0;   // objetivo "crudo" (lo que pide la lógica)
     private double targetCmdRad = 0.0;   // objetivo suavizado que persigue el PID
@@ -89,6 +88,7 @@ public class SpindexSubsystem extends SubsystemBase {
     NormalizedRGBA colorsL;
 
     // Telemetría
+    public double rawSpindexP; // posición actual en rad (raw normalizada)
     public double Spindexp; // posición actual en rad (raw normalizada)
 
     public enum DetectedColor { PURPLE, GREEN, UNKNOWN }
@@ -137,7 +137,9 @@ public class SpindexSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // ===== Lecturas base =====
-        Spindexp = normalizeRadians((SpindexPos.getVoltage() / 3.3) * 2.0 * Math.PI);
+        rawSpindexP = normalizeRadians((SpindexPos.getVoltage() / 3.3) * 2.0 * Math.PI);
+
+        Spindexp = normalizeRadians(rawSpindexP - offsetRad);
 
         // LPF sobre la medición (en el delta envuelto)
         double dPos = deltaRad(Spindexp, posFilteredRad);
@@ -152,7 +154,7 @@ public class SpindexSubsystem extends SubsystemBase {
         if (!Shootmode) {
             if (!approximatelyEqual(targetPosRad, offsetRad) && nBalls == -1) {
                 // primer paso: volver a offset y arrancar contador
-                targetPosRad = offsetRad;
+                targetPosRad = 0;
                 nBalls = 0;
             } else if (nBalls >= 0 && nBalls < 3) {
                 // Trigger por flanco: presencia + cooldown
@@ -164,7 +166,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
                     // Avanza plato SOLO si aún no llenamos las 3
                     if (nBalls < 3) {
-                        targetPosRad = normalizeRadians(targetPosRad + 2.0 * Math.PI / 3.0); // +120°
+                        targetPosRad = normalizeRadians(targetPosRad + Math.toRadians(120)); // +120°
                     }
 
                     objectLatched = true;
@@ -183,15 +185,15 @@ public class SpindexSubsystem extends SubsystemBase {
                 // terminado: pasar a modo tiro y mandar a FPos
                 Shootmode = true;
                 nBalls = -1;
-                targetPosRad = FPosRad;
+                targetPosRad += Math.toRadians(60);
             }
         }
 
-        if (hookSubsystem.nFlick != lastFlickSeen) {
-            if ((hookSubsystem.nFlick % 3) == 0){
-                setShootMode(false);}
-            lastFlickSeen = hookSubsystem.nFlick;
-        }
+            if ((hookSubsystem.nFlick == 3) ){
+                setShootMode(false);
+                hookSubsystem.nFlick = 0;
+            }
+
 
 
 

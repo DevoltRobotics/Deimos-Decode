@@ -37,6 +37,12 @@ public class TeleOp extends OpModeCommand {
             turretSubsystem.setTurretPower(gamepad1.left_stick_x);
         }));
 
+
+
+        CommandScheduler.getInstance().setDefaultCommand(pedroSubsystem, pedroSubsystem.fieldCentricCmd(gamepad1));
+
+
+
         Garra.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem, llSubsystem));
 
 
@@ -65,12 +71,14 @@ public class TeleOp extends OpModeCommand {
                 Garra, GamepadKeys.Button.DPAD_UP
         );
 
-
-        shootmode.whenPressed(new ParallelCommandGroup(
-                new InstantCommand(() -> spindexSubsystem.setShootMode(true)),
-        new InstantCommand(() -> spindexSubsystem.lastFlickSeen = 0),
-        new InstantCommand(() -> hookSubsystem.nFlick = 0)
+        shootmode.whenPressed(
+                new InstantCommand(() -> {
+                    spindexSubsystem.setNBalls(3);
+                    hookSubsystem.nFlick = 0;
+                }
         ));
+
+
 
 
         Button nextB = new GamepadButton(
@@ -83,13 +91,14 @@ public class TeleOp extends OpModeCommand {
                 Garra, GamepadKeys.Button.DPAD_DOWN
         );
 
-
-        intakemode.whenPressed(new InstantCommand(() -> spindexSubsystem.setShootMode(false)));
-
-        intakemode.whenPressed(new ParallelCommandGroup(
-                new InstantCommand(() -> spindexSubsystem.setShootMode(false)),
-                        new InstantCommand(()->spindexSubsystem.setNBalls(-1))
+        intakemode.whenPressed(
+                new InstantCommand(() -> {
+                    spindexSubsystem.setNBalls(-1);
+                    hookSubsystem.nFlick = 3;
+                }
         ));
+
+
 
 
         Button hookUpAndDown = new GamepadButton(

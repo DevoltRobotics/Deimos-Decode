@@ -8,6 +8,7 @@ import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
+import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
@@ -34,5 +35,7 @@ public class shooter_test extends OpModeCommand {
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new ShooterShootCmd(shooterSubsystem, () -> TV));
         gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem,llSubsystem));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).toggleWhenActive(new UpAndDownCMD(hookSubsystem));
+
     }
 }

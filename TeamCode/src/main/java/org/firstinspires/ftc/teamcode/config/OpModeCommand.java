@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LLSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
@@ -30,6 +31,8 @@ public abstract class OpModeCommand extends OpMode {
     public SpindexSubsystem spindexSubsystem;
     public LLSubsystem llSubsystem;
     public HookSubsystem hookSubsystem;
+
+    public PedroSubsystem pedroSubsystem;
 
     public IMU imu;
     //reinicia la lista de comandos
@@ -62,7 +65,8 @@ public abstract class OpModeCommand extends OpMode {
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
                 turretSubsystem = new TurretSubsystem(hardwareMap),
                 spindexSubsystem = new SpindexSubsystem(hardwareMap,hookSubsystem),
-                llSubsystem = new LLSubsystem(hardwareMap, Alliance.ANY)
+                llSubsystem = new LLSubsystem(hardwareMap, Alliance.ANY),
+                pedroSubsystem = new PedroSubsystem(hardwareMap)
         );
 
         imu = hardwareMap.get(IMU.class, "imu");

@@ -26,8 +26,6 @@ public class spindex_test extends OpModeCommand {
         gamepadEx1 = new GamepadEx(gamepad1);
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new SpinSorterCMD(spindexSubsystem,spindexSubsystem.FPosRad));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new SpinSorterCMD(spindexSubsystem,spindexSubsystem.SPosRad));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(new SpinSorterCMD(spindexSubsystem,spindexSubsystem.TPosRad));
 
     }
 }

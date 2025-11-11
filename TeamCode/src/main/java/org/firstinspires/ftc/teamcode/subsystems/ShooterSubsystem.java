@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -32,6 +33,8 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
+
         shooterPIDF = new PIDFController(SCoeffs);
     }
 
@@ -39,7 +42,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public void periodic(){
         shooterPIDF.setCoefficients(SCoeffs);
 
-        double CurrentVelocity = shooter2.getVelocity();
+        double CurrentVelocity = -(shooter2.getVelocity());
 
         shooterPIDF.setSetPoint(TargetVelocity);
         double power = (kV *TargetVelocity)+shooterPIDF.calculate(CurrentVelocity);
