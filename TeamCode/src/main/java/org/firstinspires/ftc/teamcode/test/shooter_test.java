@@ -8,6 +8,7 @@ import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
+import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
@@ -21,6 +22,10 @@ public class shooter_test extends OpModeCommand {
 
     GamepadEx gamepadEx1;
     public static double TV = 0;
+
+    public shooter_test() {
+        super(Alliance.ANY);
+    }
 
     @Override
     public void initialize() {

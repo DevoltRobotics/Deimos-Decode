@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.commands.turret;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.command.Subsystem;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
+import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.subsystems.LLSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
@@ -16,6 +16,8 @@ public class TurretAutoLLCMD extends CommandBase {
     TurretSubsystem subsystem;
     LLSubsystem ll;
 
+    double offset = 0;
+
 
     public TurretAutoLLCMD(TurretSubsystem subsystem, LLSubsystem ll) {
         this.subsystem = subsystem;
@@ -24,24 +26,48 @@ public class TurretAutoLLCMD extends CommandBase {
         llPidf = new PIDFController(TurretSubsystem.llPidfCoeffs);
 
         addRequirements(subsystem);
+
     }
 
     @Override
     public void execute() {
         llPidf.setCoefficients(TurretSubsystem.llPidfCoeffs);
-        llPidf.setSetPoint(0);
         llPidf.setTolerance(0.1);
         llPidf.setMinimumOutput(TurretSubsystem.Minimum);
 
-        Double tx = ll.getAllianceTX();
+        if (ll.result != null && ll.result.isValid()) {
+            Double Area = ll.getAllianceTA();
+            if (Area != null) {
 
-        if(tx != null) {
-            double turretPower = llPidf.calculate(tx);
-            subsystem.setTurretPower(turretPower);
+                if (Area > 0.55) {
+                    offset = 0;
+                } else if (Area < 0.55) {
+                    offset = 3;
+                }
+            }
 
-            FtcDashboard.getInstance().getTelemetry().addData("turret power", turretPower);
-        } else {
-            subsystem.setTurretPower(0);
+            llPidf.setSetPoint(0);
+
+            Double tx = ll.getAllianceTX();
+
+
+            if (ll.alliance == Alliance.BLUE ){
+            if (tx != null) {
+                double turretPower = llPidf.calculate(tx-offset);
+                subsystem.setTurretPower(turretPower);
+            } else {
+                subsystem.setTurretPower(0);
+                }
+            } else if (ll.alliance == Alliance.RED) {
+
+                if (tx != null) {
+                    double turretPower = llPidf.calculate(tx+offset);
+                    subsystem.setTurretPower(turretPower);
+                } else {
+                    subsystem.setTurretPower(0);
+                }
+            }
         }
+
     }
 }

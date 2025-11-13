@@ -1,20 +1,26 @@
 package org.firstinspires.ftc.teamcode.test;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 
+import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.commands.sorter.SpinSorterCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
 @Config
-@TeleOp
+@Autonomous(preselectTeleOp = "TeleOpRed")
 public class spindex_test extends OpModeCommand {
     GamepadEx gamepadEx1;
+
+    public spindex_test() {
+        super(Alliance.ANY);
+    }
 
     @Override
     public void initialize() {

@@ -46,7 +46,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
     // Estabilidad / antifricción
     public static double K_STATIC = 0.0;                 // empujón anti-fricción
-    public static double ERROR_DEADBAND_RAD = 0.05;      // ~ 4.58°
+    public static double ERROR_DEADBAND_RAD = 0.08;      // ~ 4.58°
     public static double MIN_SERVO = 0.05;
     public static double MAX_SERVO = 1.0;
 
@@ -75,7 +75,7 @@ public class SpindexSubsystem extends SubsystemBase {
     private double targetCmdRad = 0.0;   // objetivo suavizado que persigue el PID
 
     // Estado
-    public boolean Shootmode = true;     // TRUE = modo manual/tiro; FALSE = modo indexar auto
+    private boolean Shootmode = true;     // TRUE = modo manual/tiro; FALSE = modo indexar auto
     private int nBalls = -1;             // contador interno
 
     // Estado de medición (radianes)
@@ -120,12 +120,12 @@ public class SpindexSubsystem extends SubsystemBase {
     // ----------------- Utilidades de ángulo (rad) -----------------
 
     /** Diferencia circular envuelta a (-π, π] */
-    private static double deltaRad(double to, double from) {
+    public static double deltaRad(double to, double from) {
         return normalizeRadians(to - from);
     }
 
     /** Distancia por el arco corto (valor absoluto) */
-    private static double circularAbsRad(double a, double b) {
+    public static double circularAbsRad(double a, double b) {
         return Math.abs(deltaRad(a, b));
     }
 
@@ -193,8 +193,6 @@ public class SpindexSubsystem extends SubsystemBase {
                 setShootMode(false);
                 hookSubsystem.nFlick = 0;
             }
-
-
 
 
         // ===== Control (error-a-cero + slew + deadband + K_STATIC) =====
@@ -295,7 +293,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
     /** Avanza/retrocede 120° (2π/3 rad) manualmente */
     public void nextPos(boolean reverse) {
-        double step = 2.0 * Math.PI / 3.0;
+        double step = Math.toRadians(120);
         this.targetPosRad = normalizeRadians(this.targetPosRad + (reverse ? step : -step));
     }
 

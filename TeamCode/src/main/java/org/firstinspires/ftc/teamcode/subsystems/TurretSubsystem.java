@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -25,6 +26,11 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void setTurretPower(double power) {
         Torreta.setPower(power);
+    }
+
+    @Override
+    public void periodic() {
+        FtcDashboard.getInstance().getTelemetry().addData("turret power", Torreta.getPower());
     }
 
 }

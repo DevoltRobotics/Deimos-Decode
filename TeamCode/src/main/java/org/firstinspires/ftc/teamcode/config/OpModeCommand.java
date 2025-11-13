@@ -34,6 +34,12 @@ public abstract class OpModeCommand extends OpMode {
 
     public PedroSubsystem pedroSubsystem;
 
+    private Alliance alliance;
+
+    public OpModeCommand(Alliance alliance) {
+        this.alliance = alliance;
+    }
+
     public IMU imu;
     //reinicia la lista de comandos
     public void reset() {
@@ -65,7 +71,7 @@ public abstract class OpModeCommand extends OpMode {
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
                 turretSubsystem = new TurretSubsystem(hardwareMap),
                 spindexSubsystem = new SpindexSubsystem(hardwareMap,hookSubsystem),
-                llSubsystem = new LLSubsystem(hardwareMap, Alliance.ANY),
+                llSubsystem = new LLSubsystem(hardwareMap, alliance),
                 pedroSubsystem = new PedroSubsystem(hardwareMap)
         );
 
@@ -82,10 +88,6 @@ public abstract class OpModeCommand extends OpMode {
         imu.resetYaw();
     }
 
-    @Override
-    public void init_loop() {
-        CommandScheduler.getInstance().run();
-    }
 
     @Override
     public void loop() {

@@ -12,12 +12,12 @@ public class UpAndDownCMD extends SequentialCommandGroup {
     public UpAndDownCMD(HookSubsystem hookSubsystem) {
         super(
                 new HookUpCMD(hookSubsystem),
-                new WaitCommand(600),
+                new WaitCommand(300),
+                new HookDownCMD(hookSubsystem),
+                new WaitCommand(300),
                 new InstantCommand(()->{
                     hookSubsystem.addnFLick();
-                }),
-                new HookDownCMD(hookSubsystem),
-                new WaitCommand(400)
+                })
         );
     }
 

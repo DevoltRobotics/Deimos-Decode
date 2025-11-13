@@ -14,7 +14,7 @@ public class LLSubsystem extends SubsystemBase {
 
     public LLResult result;
 
-    private final Alliance alliance;
+    public final Alliance alliance;
 
     public LLSubsystem(HardwareMap hMap, Alliance alliance){
         limelight = hMap.get(Limelight3A.class, "limelight");
