@@ -61,7 +61,7 @@ public class PedroSubsystem extends SubsystemBase {
 
         @Override
         public void execute() {
-            follower.setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x,gamepad.right_stick_x, false);
+            follower.setTeleOpDrive(-gamepad.left_stick_y, -gamepad.left_stick_x,-gamepad.right_stick_x, false);
             if (gamepad.dpad_up){
                 follower.setPose(new Pose(0,0,0));
             }

@@ -15,10 +15,10 @@ public class ShooterAutoLLCMD extends CommandBase {
     static {
         VelocityLUT.add(0.12, 1900);
         VelocityLUT.add(0.2, 1670);
-        VelocityLUT.add(0.25, 1565);
-        VelocityLUT.add(0.4, 1430);
-        VelocityLUT.add(0.713, 1300);
-        VelocityLUT.add(3.22, 1050);
+        VelocityLUT.add(0.25, 1580);
+        VelocityLUT.add(0.4, 1445);
+        VelocityLUT.add(0.714, 1280);
+        VelocityLUT.add(3.6, 1130);
         VelocityLUT.add(10, 0);
 
 
@@ -37,13 +37,14 @@ public class ShooterAutoLLCMD extends CommandBase {
 
     @Override
     public void execute(){
+        LL.setAimingPipeline();
 
         if (LL.result != null && LL.result.isValid()) {
             Double Area = LL.getAllianceTA();
             if(Area != null){
                 double velocity = VelocityLUT.get(Area);
 
-                subsystem.setTargetVelocity(Range.clip(velocity, 1050,1565));
+                subsystem.setTargetVelocity(Range.clip(velocity, 1050,1580));
             }
         }
     }

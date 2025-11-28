@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import com.pedropathing.control.FilteredPIDFCoefficients;
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -13,7 +15,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
-    public static FollowerConstants followerConstants = new FollowerConstants().mass(12.5);
+    public static FollowerConstants followerConstants = new FollowerConstants()
+            .lateralZeroPowerAcceleration(-67.57067726317764)
+            .forwardZeroPowerAcceleration(-29.754741)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.1,0,0.005,0))
+            .headingPIDFCoefficients(new PIDFCoefficients(2,0,0.05,0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03,0,0.0001,0.6,0.01))
+            .mass(12.5);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -21,11 +29,13 @@ public class Constants {
             .rightRearMotorName("rr")
             .leftRearMotorName("lr")
             .leftFrontMotorName("lf")
-            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .useBrakeModeInTeleOp(true);
+            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .useBrakeModeInTeleOp(true)
+            .xVelocity(62.09873089013288)
+            .yVelocity(78.81829209215059);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(0)

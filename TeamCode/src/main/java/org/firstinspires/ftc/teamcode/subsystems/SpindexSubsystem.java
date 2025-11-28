@@ -70,12 +70,13 @@ public class SpindexSubsystem extends SubsystemBase {
     public double offsetRad =   0.6073;         // home
     public double FPosRad   = offsetRad + Math.toRadians(60) ;             // posición de "ready to shoot"
 
+    public boolean manualMode = false;
 
     private double targetPosRad = 0.0;   // objetivo "crudo" (lo que pide la lógica)
     private double targetCmdRad = 0.0;   // objetivo suavizado que persigue el PID
 
     // Estado
-    private boolean Shootmode = true;     // TRUE = modo manual/tiro; FALSE = modo indexar auto
+    private boolean Shootmode = false;     // TRUE = modo manual/tiro; FALSE = modo indexar auto
     private int nBalls = -1;             // contador interno
 
     // Estado de medición (radianes)
@@ -86,12 +87,21 @@ public class SpindexSubsystem extends SubsystemBase {
     private DetectedColor currentColorL = DetectedColor.UNKNOWN;
     float normRed, normGreen, normBlue;
     NormalizedRGBA colorsL;
+    double distCm = 20;
+    ElapsedTime distanceReadTimer = new ElapsedTime();
 
     // Telemetría
     public double rawSpindexP; // posición actual en rad (raw normalizada)
     public double Spindexp; // posición actual en rad (raw normalizada)
 
     public enum DetectedColor { PURPLE, GREEN, UNKNOWN }
+    public double greenB = Math.toRadians(60);
+
+    public double purple1 = Math.toRadians(180);
+
+    public double purple2 = Math.toRadians(300);
+
+
 
     public SpindexSubsystem(HardwareMap hMap,HookSubsystem hookSubsystem) {
         this.hookSubsystem = hookSubsystem;
@@ -148,51 +158,58 @@ public class SpindexSubsystem extends SubsystemBase {
         // ===== Lógica automática con booleano Shootmode =====
         // Cuando Shootmode == false, indexa automáticamente hasta 3 pelotas.
         // Cuando completa, regresa a Shootmode = true, nBalls = -1, y mueve a FPosRad.
-        double distCm = ((DistanceSensor) colorSensorL).getDistance(DistanceUnit.CM);
-        double nowMs = timer.milliseconds();
 
-        if (!Shootmode) {
-            if (!approximatelyEqual(targetPosRad, offsetRad) && nBalls == -1) {
-                // primer paso: volver a offset y arrancar contador
-                targetPosRad = 0;
-                nBalls = 0;
-            } else if (nBalls >= 0 && nBalls < 3) {
-                // Trigger por flanco: presencia + cooldown
-                if (!objectLatched
-                        && distCm <= ENTER_DISTANCE_CM
-                        && (nowMs - lastTriggerTimeMs) >= TRIGGER_COOLDOWN_MS) {
-
-                    nBalls += 1;
-
-                    // Avanza plato SOLO si aún no llenamos las 3
-                    if (nBalls < 3) {
-                        targetPosRad = normalizeRadians(targetPosRad + Math.toRadians(120)); // +120°
-                    }
-
-                    objectLatched = true;
-                    lastTriggerTimeMs = nowMs;
-                    lastTriggerPosRad = Spindexp;
-                }
-
-                // soltar el latch cuando: salió del umbral y avanzamos suficiente
-                if (objectLatched) {
-                    boolean movedEnough = circularAbsRad(Spindexp, lastTriggerPosRad) >= MIN_ADVANCE_RAD;
-                    if (distCm >= EXIT_DISTANCE_CM && movedEnough) {
-                        objectLatched = false;
-                    }
-                }
-            } else if (nBalls == 3) {
-                // terminado: pasar a modo tiro y mandar a FPos
-                Shootmode = true;
-                nBalls = -1;
-                targetPosRad += Math.toRadians(60);
-            }
+        if(distanceReadTimer.milliseconds() >= 100) {
+            distCm = ((DistanceSensor) colorSensorL).getDistance(DistanceUnit.CM);
+            distanceReadTimer.reset();
         }
 
-            if ((hookSubsystem.nFlick == 3) ){
+        double nowMs = timer.milliseconds();
+
+        if(!manualMode) {
+            if (!Shootmode) {
+                if (!approximatelyEqual(targetPosRad, offsetRad) && nBalls == -1) {
+                    // primer paso: volver a offset y arrancar contador
+                    targetPosRad = 0;
+                    nBalls = 0;
+                } else if (nBalls >= 0 && nBalls < 3) {
+                    // Trigger por flanco: presencia + cooldown
+                    if (!objectLatched
+                            && distCm <= ENTER_DISTANCE_CM
+                            && (nowMs - lastTriggerTimeMs) >= TRIGGER_COOLDOWN_MS) {
+
+                        nBalls += 1;
+
+                        // Avanza plato SOLO si aún no llenamos las 3
+                        if (nBalls < 3) {
+                            targetPosRad = normalizeRadians(targetPosRad + Math.toRadians(120)); // +120°
+                        }
+
+                        objectLatched = true;
+                        lastTriggerTimeMs = nowMs;
+                        lastTriggerPosRad = Spindexp;
+                    }
+
+                    // soltar el latch cuando: salió del umbral y avanzamos suficiente
+                    if (objectLatched) {
+                        boolean movedEnough = circularAbsRad(Spindexp, lastTriggerPosRad) >= MIN_ADVANCE_RAD;
+                        if (distCm >= EXIT_DISTANCE_CM && movedEnough) {
+                            objectLatched = false;
+                        }
+                    }
+                } else if (nBalls == 3) {
+                    // terminado: pasar a modo tiro y mandar a FPos
+                    Shootmode = true;
+                    nBalls = -1;
+                    targetPosRad += Math.toRadians(60);
+                }
+            }
+
+            if ((hookSubsystem.nFlick == 3)) {
                 setShootMode(false);
                 hookSubsystem.nFlick = 0;
             }
+        }
 
 
         // ===== Control (error-a-cero + slew + deadband + K_STATIC) =====
@@ -306,6 +323,10 @@ public class SpindexSubsystem extends SubsystemBase {
     /** Getters útiles */
     public double getCurrentRad() { return Spindexp; }
     public double getTargetRad()  { return targetPosRad; }
+
+    public boolean isAtTarget() {
+        return SpindexPID.atSetPoint();
+    }
 
     /** Helpers en grados por si los ocupas */
     public void setTargetDeg(double deg) { setTargetPos(Math.toRadians(deg)); }

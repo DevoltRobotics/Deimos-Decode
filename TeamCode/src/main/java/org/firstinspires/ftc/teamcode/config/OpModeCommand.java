@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LLSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.LiftSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
@@ -36,11 +37,12 @@ public abstract class OpModeCommand extends OpMode {
 
     private Alliance alliance;
 
+    public LiftSubsystem liftSubsystem;
+
     public OpModeCommand(Alliance alliance) {
         this.alliance = alliance;
     }
 
-    public IMU imu;
     //reinicia la lista de comandos
     public void reset() {
         CommandScheduler.getInstance().reset();
@@ -72,21 +74,15 @@ public abstract class OpModeCommand extends OpMode {
                 turretSubsystem = new TurretSubsystem(hardwareMap),
                 spindexSubsystem = new SpindexSubsystem(hardwareMap,hookSubsystem),
                 llSubsystem = new LLSubsystem(hardwareMap, alliance),
-                pedroSubsystem = new PedroSubsystem(hardwareMap)
+                pedroSubsystem = new PedroSubsystem(hardwareMap),
+                liftSubsystem = new LiftSubsystem(hardwareMap)
         );
 
-        imu = hardwareMap.get(IMU.class, "imu");
 
         initialize();
     }
 
-    public void initImu() {
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
-        imu.initialize(parameters);
-        imu.resetYaw();
-    }
+
 
 
     @Override

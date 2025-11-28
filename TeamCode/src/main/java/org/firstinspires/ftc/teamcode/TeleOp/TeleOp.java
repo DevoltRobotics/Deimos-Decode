@@ -18,6 +18,9 @@ import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeOutCMD;
+import org.firstinspires.ftc.teamcode.commands.intake.LiftDownCMD;
+import org.firstinspires.ftc.teamcode.commands.intake.LiftHoldCMD;
+import org.firstinspires.ftc.teamcode.commands.intake.LiftUpCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.IntakeModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
@@ -47,7 +50,12 @@ public abstract class TeleOp extends OpModeCommand {
 
 
 
+        new HookDownCMD(hookSubsystem).schedule();
+
+
         CommandScheduler.getInstance().setDefaultCommand(pedroSubsystem, pedroSubsystem.fieldCentricCmd(gamepad1));
+
+        CommandScheduler.getInstance().setDefaultCommand(liftSubsystem, new LiftHoldCMD(liftSubsystem));
 
 
 
@@ -68,6 +76,18 @@ public abstract class TeleOp extends OpModeCommand {
         );
 
         IntakeOut.whenHeld(new IntakeOutCMD(intakeSubsystem));
+
+        Button Uprobot = new GamepadButton(
+                Chasis, GamepadKeys.Button.Y
+        );
+
+        Uprobot.whenHeld(new LiftUpCMD(liftSubsystem));
+
+        Button DownRobot = new GamepadButton(
+                Chasis, GamepadKeys.Button.B
+        );
+
+        DownRobot.whenHeld(new LiftDownCMD(liftSubsystem));
 
         Button lastB = new GamepadButton(
                 Garra, GamepadKeys.Button.LEFT_BUMPER

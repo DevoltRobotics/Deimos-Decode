@@ -31,6 +31,8 @@ public class TurretAutoLLCMD extends CommandBase {
 
     @Override
     public void execute() {
+        ll.setAimingPipeline();
+
         llPidf.setCoefficients(TurretSubsystem.llPidfCoeffs);
         llPidf.setTolerance(0.1);
         llPidf.setMinimumOutput(TurretSubsystem.Minimum);
@@ -42,7 +44,7 @@ public class TurretAutoLLCMD extends CommandBase {
                 if (Area > 0.55) {
                     offset = 0;
                 } else if (Area < 0.55) {
-                    offset = 3;
+                    offset = 2.8;
                 }
             }
 

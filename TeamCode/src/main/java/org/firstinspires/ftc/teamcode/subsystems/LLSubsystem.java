@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.Pattern;
 
 public class LLSubsystem extends SubsystemBase {
 
@@ -16,29 +17,41 @@ public class LLSubsystem extends SubsystemBase {
 
     public final Alliance alliance;
 
+
+
+    private int currentPipeline = 0;
+
     public LLSubsystem(HardwareMap hMap, Alliance alliance){
         limelight = hMap.get(Limelight3A.class, "limelight");
         this.alliance = alliance;
 
         limelight.setPollRateHz(100);
         limelight.start();
-        limelight.pipelineSwitch(0); // apriltags
     }
 
     @Override
     public void periodic(){
+        limelight.pipelineSwitch(currentPipeline);
+
         result = limelight.getLatestResult();
 
-
         if (result != null && result.isValid()) {
-            FtcDashboard.getInstance().getTelemetry().addData("LL AprilTag tA", result.getTa());
-            FtcDashboard.getInstance().getTelemetry().addData("LL AprilTag tX", result.getTy());
+            if(currentPipeline == 0) {
+                FtcDashboard.getInstance().getTelemetry().addData("Limelight Alliance tA", getAllianceTA());
+                FtcDashboard.getInstance().getTelemetry().addData("Limelight Alliance tX", getAllianceTX());
+            } else if(currentPipeline == 1) {
+                FtcDashboard.getInstance().getTelemetry().addData("Obelisk Pattern", getObelisk());
+            }
         } else {
             FtcDashboard.getInstance().getTelemetry().addData("Limelight", "No Targets");
         }
+
+        FtcDashboard.getInstance().getTelemetry().addData("pipe",currentPipeline);
     }
 
     public Double getAllianceTA() {
+        setAimingPipeline();
+
         if (result != null && result.isValid() && !result.getFiducialResults().isEmpty()) {
             int id = result.getFiducialResults().get(0).getFiducialId();
 
@@ -54,6 +67,7 @@ public class LLSubsystem extends SubsystemBase {
 
 
     public Double getAllianceTX() {
+        setAimingPipeline();
 
         if (result != null && result.isValid() && !result.getFiducialResults().isEmpty()) {
             int id = result.getFiducialResults().get(0).getFiducialId();
@@ -68,5 +82,31 @@ public class LLSubsystem extends SubsystemBase {
         return null;
     }
 
+    public Pattern getObelisk() {
+        setObeliskPipeline();
+
+        if (result != null && result.isValid() && !result.getFiducialResults().isEmpty()) {
+            int id = result.getFiducialResults().get(0).getFiducialId();
+
+            switch(id) {
+                case 21:
+                    return Pattern.GPP;
+                case 22:
+                    return Pattern.PGP;
+                case 23:
+                    return Pattern.PPG;
+            }
+        }
+
+        return Pattern.UNKNOWN;
+    }
+
+    public void setObeliskPipeline() {
+        currentPipeline = 1;
+    }
+
+    public void setAimingPipeline() {
+        currentPipeline = 0;
+    }
 
 }
