@@ -12,6 +12,8 @@ import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
+import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
+import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 
@@ -40,7 +42,10 @@ public class shooter_test extends OpModeCommand {
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new ShooterShootCmd(shooterSubsystem, () -> TV));
         gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem,llSubsystem));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).toggleWhenActive(new UpAndDownCMD(hookSubsystem));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).toggleWhenActive(new UpAndDownCMD(hookSubsystem,spindexSubsystem));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).toggleWhenActive(new NextPosSorterCMD(spindexSubsystem));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_UP).toggleWhenActive(new ShootModeCMD(spindexSubsystem));
+
 
     }
 }

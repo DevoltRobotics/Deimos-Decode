@@ -53,17 +53,17 @@ public class TurretAutoLLCMD extends CommandBase {
             Double tx = ll.getAllianceTX();
 
 
-            if (ll.alliance == Alliance.BLUE ){
-            if (tx != null) {
-                double turretPower = llPidf.calculate(tx-offset);
-                subsystem.setTurretPower(turretPower);
-            } else {
-                subsystem.setTurretPower(0);
+            if (ll.alliance == Alliance.BLUE) {
+                if (tx != null) {
+                    double turretPower = llPidf.calculate(tx - offset);
+                    subsystem.setTurretPower(turretPower);
+                } else {
+                    subsystem.setTurretPower(0);
                 }
             } else if (ll.alliance == Alliance.RED) {
 
                 if (tx != null) {
-                    double turretPower = llPidf.calculate(tx+offset);
+                    double turretPower = llPidf.calculate(tx + offset);
                     subsystem.setTurretPower(turretPower);
                 } else {
                     subsystem.setTurretPower(0);

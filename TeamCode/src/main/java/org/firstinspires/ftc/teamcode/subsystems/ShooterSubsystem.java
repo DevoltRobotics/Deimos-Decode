@@ -33,7 +33,6 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        shooter.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooterPIDF = new PIDFController(SCoeffs);
     }

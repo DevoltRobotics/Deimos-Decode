@@ -28,6 +28,6 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void Hold(){
-        intake.setPower(0.3);
+        intake.setPower(0.15);
     }
 }

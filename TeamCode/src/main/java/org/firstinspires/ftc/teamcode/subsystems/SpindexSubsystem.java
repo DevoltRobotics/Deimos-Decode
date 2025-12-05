@@ -4,337 +4,204 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.norm
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
 @Config
 public class SpindexSubsystem extends SubsystemBase {
 
+    public double AngleError;
+
     HookSubsystem hookSubsystem;
 
+    DigitalChannel laser;
     public int lastFlickSeen = Integer.MIN_VALUE;
+    CRServo spindex;
 
-    // ----------------- Actuador -----------------
-    public CRServo spindex;
+    public boolean BPresence = false;
 
-    // ----------------- Sensores -----------------
-    public NormalizedColorSensor colorSensorL;
-    public NormalizedColorSensor colorSensorR;
-    public AnalogInput SpindexPos; // 0..3.3V -> 0..2π rad
+    public NormalizedColorSensor colorSensor;
+    AnalogInput spindexEncoder;
+    public double SpindexPos;
 
-    // ----------------- PID (radianes) -----------------
-    public PIDFController SpindexPID;
-
-
-    // Tunings en RAD (ajústalos en dashboard)
+    public PIDFController spindexPID;
     public static PIDFCoefficients SPcoeffs = new PIDFCoefficients(
-            0.13,   // P
+            0.5,   // P
             0.00,   // I
-            0.012,  // D
+            0.015,  // D
             0.00    // F
     );
 
-    // Estabilidad / antifricción
-    public static double K_STATIC = 0.0;                 // empujón anti-fricción
-    public static double ERROR_DEADBAND_RAD = 0.08;      // ~ 4.58°
-    public static double MIN_SERVO = 0.05;
-    public static double MAX_SERVO = 1.0;
+    public static double DEADBAND = Math.toRadians(1);
 
-    // Slew del setpoint para evitar picos
-    public static double TARGET_SLEW_RAD_PER_SEC = 8.0;  // ~458°/s
-    public static double POS_LPF_ALPHA = 0.25;           // filtro lectura
-
-    // ----------------- Lógica automática (distancia) -----------------
-    public static double ENTER_DISTANCE_CM = 2.5;             // umbral entrar
-    public static double EXIT_DISTANCE_CM  = 3.5;             // umbral salir (histeresis)
-    public static double TRIGGER_COOLDOWN_MS = 250;           // anti rebote tiempo
-    public static double MIN_ADVANCE_RAD = Math.toRadians(110); // avance mínimo para rearmar
-
-    private boolean objectLatched = false;
-    private double lastTriggerTimeMs = -9999;
-    private double lastTriggerPosRad = 0.0;
+    public static double Min_Output = 0.043;
     private final ElapsedTime timer = new ElapsedTime();
 
-    // ----------------- Objetivos (en radianes) -----------------
-    // NOTA: todo interno en radianes.
-    public double offsetRad =   0.6073;         // home
-    public double FPosRad   = offsetRad + Math.toRadians(60) ;             // posición de "ready to shoot"
+    public static double TRIGGER_COOLDOWN_MS = 250;             // anti rebote tiempo
+    public static double MIN_ADVANCE_RAD = Math.toRadians(110); // avance mínimo para indexar
 
-    public boolean manualMode = false;
+    private double targetPosRad = 0.0;
 
-    private double targetPosRad = 0.0;   // objetivo "crudo" (lo que pide la lógica)
-    private double targetCmdRad = 0.0;   // objetivo suavizado que persigue el PID
-
-    // Estado
     private boolean Shootmode = false;     // TRUE = modo manual/tiro; FALSE = modo indexar auto
-    private int nBalls = -1;             // contador interno
+    public static int nBalls = 0; // CONTAODR INTERNO
+    private double deltaT;
 
-    // Estado de medición (radianes)
-    private double posFilteredRad = 0.0;
-    private double lastUpdateTimeS = 0.0;
+    public enum DetectedColor {PURPLE, GREEN, UNKNOWN}
 
-    // Color
-    private DetectedColor currentColorL = DetectedColor.UNKNOWN;
-    float normRed, normGreen, normBlue;
-    NormalizedRGBA colorsL;
-    double distCm = 20;
-    ElapsedTime distanceReadTimer = new ElapsedTime();
+    double NextPosRad = Math.toRadians(120);
+    public double IntakePos = 0.6549744683847812;
+    public double ShootPos = 0.4798068780028048;
 
-    // Telemetría
-    public double rawSpindexP; // posición actual en rad (raw normalizada)
-    public double Spindexp; // posición actual en rad (raw normalizada)
+    public boolean FirstInitIn = true;
 
-    public enum DetectedColor { PURPLE, GREEN, UNKNOWN }
-    public double greenB = Math.toRadians(60);
+    public boolean FirstInitSho = true;
 
-    public double purple1 = Math.toRadians(180);
+    //funciones para CMDS
 
-    public double purple2 = Math.toRadians(300);
-
-
-
-    public SpindexSubsystem(HardwareMap hMap,HookSubsystem hookSubsystem) {
-        this.hookSubsystem = hookSubsystem;
-
-        spindex = hMap.get(CRServo.class, "spindex");
-
-        SpindexPos = hMap.get(AnalogInput.class, "Spencoder");
-
-        colorSensorL = hMap.get(NormalizedColorSensor.class, "colorL");
-        colorSensorR = hMap.get(NormalizedColorSensor.class, "colorR");
-        colorSensorL.setGain(8);
-
-        SpindexPID = new PIDFController(SPcoeffs);
-
-        // Inicializar estados con la lectura actual
-        double pos0 = normalizeRadians((SpindexPos.getVoltage() / 3.3) * 2 * Math.PI);
-        posFilteredRad = pos0;
-        targetCmdRad   = pos0;
-        targetPosRad   = pos0;
-        lastUpdateTimeS = timer.seconds();
-
-        lastFlickSeen = hookSubsystem.nFlick;
-
+    public boolean getFirstInitIn(){
+        return FirstInitIn;
     }
 
-    // ----------------- Utilidades de ángulo (rad) -----------------
-
-    /** Diferencia circular envuelta a (-π, π] */
-    public static double deltaRad(double to, double from) {
-        return normalizeRadians(to - from);
+    public void setFirstInitIn(boolean FirstInitIn){
+        this.FirstInitIn = FirstInitIn;
     }
 
-    /** Distancia por el arco corto (valor absoluto) */
-    public static double circularAbsRad(double a, double b) {
-        return Math.abs(deltaRad(a, b));
+    public boolean getFirstInitSho(){
+        return FirstInitSho;
     }
 
-    private static double clamp(double v, double lo, double hi) {
-        return Math.max(lo, Math.min(hi, v));
+    public void setFirstInitsho(boolean FirstInitSho){
+        this.FirstInitSho = FirstInitSho;
     }
 
-    // ----------------- Periodic -----------------
-    @Override
-    public void periodic() {
-        // ===== Lecturas base =====
-        rawSpindexP = normalizeRadians((SpindexPos.getVoltage() / 3.3) * 2.0 * Math.PI);
-
-        Spindexp = normalizeRadians(rawSpindexP - offsetRad);
-
-        // LPF sobre la medición (en el delta envuelto)
-        double dPos = deltaRad(Spindexp, posFilteredRad);
-        posFilteredRad = normalizeRadians(posFilteredRad + POS_LPF_ALPHA * dPos);
-
-        // ===== Lógica automática con booleano Shootmode =====
-        // Cuando Shootmode == false, indexa automáticamente hasta 3 pelotas.
-        // Cuando completa, regresa a Shootmode = true, nBalls = -1, y mueve a FPosRad.
-
-        if(distanceReadTimer.milliseconds() >= 100) {
-            distCm = ((DistanceSensor) colorSensorL).getDistance(DistanceUnit.CM);
-            distanceReadTimer.reset();
-        }
-
-        double nowMs = timer.milliseconds();
-
-        if(!manualMode) {
-            if (!Shootmode) {
-                if (!approximatelyEqual(targetPosRad, offsetRad) && nBalls == -1) {
-                    // primer paso: volver a offset y arrancar contador
-                    targetPosRad = 0;
-                    nBalls = 0;
-                } else if (nBalls >= 0 && nBalls < 3) {
-                    // Trigger por flanco: presencia + cooldown
-                    if (!objectLatched
-                            && distCm <= ENTER_DISTANCE_CM
-                            && (nowMs - lastTriggerTimeMs) >= TRIGGER_COOLDOWN_MS) {
-
-                        nBalls += 1;
-
-                        // Avanza plato SOLO si aún no llenamos las 3
-                        if (nBalls < 3) {
-                            targetPosRad = normalizeRadians(targetPosRad + Math.toRadians(120)); // +120°
-                        }
-
-                        objectLatched = true;
-                        lastTriggerTimeMs = nowMs;
-                        lastTriggerPosRad = Spindexp;
-                    }
-
-                    // soltar el latch cuando: salió del umbral y avanzamos suficiente
-                    if (objectLatched) {
-                        boolean movedEnough = circularAbsRad(Spindexp, lastTriggerPosRad) >= MIN_ADVANCE_RAD;
-                        if (distCm >= EXIT_DISTANCE_CM && movedEnough) {
-                            objectLatched = false;
-                        }
-                    }
-                } else if (nBalls == 3) {
-                    // terminado: pasar a modo tiro y mandar a FPos
-                    Shootmode = true;
-                    nBalls = -1;
-                    targetPosRad += Math.toRadians(60);
-                }
-            }
-
-            if ((hookSubsystem.nFlick == 3)) {
-                setShootMode(false);
-                hookSubsystem.nFlick = 0;
-            }
-        }
-
-
-        // ===== Control (error-a-cero + slew + deadband + K_STATIC) =====
-        SpindexPID.setMinimumOutput(MIN_SERVO);
-
-        // Slew del objetivo "real"
-        double nowS = timer.seconds();
-        double dt = Math.max(0.001, nowS - lastUpdateTimeS);
-        lastUpdateTimeS = nowS;
-
-        double maxStep = TARGET_SLEW_RAD_PER_SEC * dt;
-        double errToTarget = deltaRad(targetPosRad, targetCmdRad);
-        double step = clamp(errToTarget, -maxStep, maxStep);
-        targetCmdRad = normalizeRadians(targetCmdRad + step);
-
-        // Error circular entre targetCmd y posición filtrada
-        double errorRad = deltaRad(targetCmdRad, posFilteredRad);
-
-        // PID "error-a-cero": setpoint=0, medición=error
-        SpindexPID.setCoefficients(SPcoeffs);
-        SpindexPID.setSetPoint(0.0);
-        double power = SpindexPID.calculate(errorRad);
-
-        if (Math.abs(errorRad) > ERROR_DEADBAND_RAD) {
-            power += K_STATIC * Math.signum(errorRad);
-        } else {
-            power = 0.0; // quieto en ventana muerta
-        }
-
-        if (Double.isNaN(power)) power = 0.0;
-        power = clamp(power, -MAX_SERVO, MAX_SERVO);
-
-        spindex.setPower(power);
-
-        // ===== Colores =====
-        colorsL = colorSensorL.getNormalizedColors();
-        normRed   = colorsL.red   / colorsL.alpha;
-        normGreen = colorsL.green / colorsL.alpha;
-        normBlue  = colorsL.blue  / colorsL.alpha;
-
-        if (normRed > 0.35 && normBlue > 0.35 && normGreen < 0.35) {
-            currentColorL = DetectedColor.PURPLE;
-        } else if (normGreen > 0.35 && normBlue < 0.35 && normRed < 0.35) {
-            currentColorL = DetectedColor.GREEN;
-        } else {
-            currentColorL = DetectedColor.UNKNOWN;
-        }
-
-        // ===== Telemetría =====
-        FtcDashboard.getInstance().getTelemetry().addData("Shootmode", Shootmode);
-        FtcDashboard.getInstance().getTelemetry().addData("nBalls", nBalls);
-        FtcDashboard.getInstance().getTelemetry().addData("posRaw(rad)", Spindexp);
-        FtcDashboard.getInstance().getTelemetry().addData("posFilt(rad)", posFilteredRad);
-        FtcDashboard.getInstance().getTelemetry().addData("targetRaw(rad)", targetPosRad);
-        FtcDashboard.getInstance().getTelemetry().addData("targetCmd(rad)", targetCmdRad);
-        FtcDashboard.getInstance().getTelemetry().addData("error(rad)", errorRad);
-        FtcDashboard.getInstance().getTelemetry().addData("power", power);
-        FtcDashboard.getInstance().getTelemetry().addData("Distance(cm)", "%.3f", distCm);
-        FtcDashboard.getInstance().getTelemetry().addData("Shootmode",Shootmode);
-        FtcDashboard.getInstance().getTelemetry().addData("Flicks",hookSubsystem.nFlick);
-
+    public void setShootmode(boolean Shootmode){
+        this.Shootmode = Shootmode;
     }
 
-    // ----------------- API pública -----------------
-
-    /** Cambia a modo automático (false) o manual/tiro (true) */
-    public void setShootMode(boolean shoot) {
-        if (this.Shootmode != shoot) {
-            this.Shootmode = shoot;
-            // reset de estado de indexado al entrar a auto
-            if (!shoot) {
-                objectLatched = false;
-                lastTriggerTimeMs = -9999;
-                lastTriggerPosRad = Spindexp;
-                nBalls = -1;
-            }
-        }
+    public void holdShootmode(){
+        Shootmode = true;
     }
 
-    public boolean isShootMode() {
+    public boolean getShootmode(){
         return Shootmode;
     }
 
-    /** Fija objetivo en radianes (manual) */
-    public void setTargetPos(double targetPosRad) {
-        this.targetPosRad = normalizeRadians(targetPosRad);
+    public void advanceOneIndex() {
+        targetPosRad = normalizeRadians(targetPosRad - NextPosRad);
     }
 
-    /** Ir al home/offset */
-    public void goOffset() {
-        this.targetPosRad = offsetRad;
+    public void returnOneIndex(){
+        targetPosRad = normalizeRadians(targetPosRad+NextPosRad);
     }
 
-    /** Ir a FPos (ready) */
-    public void goFPos() {
-        this.targetPosRad = FPosRad;
+    public int getnBalls(){
+        return nBalls;
     }
 
-    /** Avanza/retrocede 120° (2π/3 rad) manualmente */
-    public void nextPos(boolean reverse) {
-        double step = Math.toRadians(120);
-        this.targetPosRad = normalizeRadians(this.targetPosRad + (reverse ? step : -step));
+    public void addnBalls(){
+        nBalls ++;
     }
 
-    /** Set/Get contador por si quieres manipular desde fuera */
-    public void setNBalls(int n) {
-        this.nBalls = n;
-    }
-    public int  getNBalls()      { return nBalls; }
-
-    /** Getters útiles */
-    public double getCurrentRad() { return Spindexp; }
-    public double getTargetRad()  { return targetPosRad; }
-
-    public boolean isAtTarget() {
-        return SpindexPID.atSetPoint();
+    public void lessBalls(){
+        nBalls --;
     }
 
-    /** Helpers en grados por si los ocupas */
-    public void setTargetDeg(double deg) { setTargetPos(Math.toRadians(deg)); }
-    public double getCurrentDeg() { return Math.toDegrees(getCurrentRad()); }
-    public double getTargetDeg()  { return Math.toDegrees(getTargetRad()); }
+    public void resetnBalls(){
+        nBalls = 0;
+    }
 
-    // ----------------- Util -----------------
-    private static boolean approximatelyEqual(double a, double b) {
-        return Math.abs(deltaRad(a, b)) < 1e-3; // ~0.057°
+    public double getAngleError(){
+        return AngleError;
+    }
+
+    public void setTargetPosRad(double targetPosRad){
+        this.targetPosRad = targetPosRad;
+    }
+
+    public double getSpindexPos(){
+        return SpindexPos;
+    }
+
+    public boolean getBPresence(){
+        return BPresence;
+    }
+
+    public double getAngleDiff(double a, double b){
+        return Math.abs(MathFunctions.getSmallestAngleDifference(a, b));
+    }
+
+    public SpindexSubsystem(HardwareMap hMap, HookSubsystem hookSubsystem) {
+        this.hookSubsystem = hookSubsystem;
+
+        laser = hMap.get(DigitalChannel.class, "laser");
+        laser.setMode(DigitalChannel.Mode.INPUT);
+
+        spindex = hMap.get(CRServo.class, "spindex");
+
+
+        spindexEncoder = hMap.get(AnalogInput.class, "Spencoder");
+
+        colorSensor = hMap.get(NormalizedColorSensor.class, "colorL");
+        colorSensor.setGain(8);
+
+        spindexPID = new PIDFController(SPcoeffs);
+
+
+        timer.reset();
+
+        lastFlickSeen = hookSubsystem.nFlick;
+
+        spindexPID.setTolerance(DEADBAND);
+    }
+
+    @Override
+    public void periodic(){
+        spindexPID.setCoefficients(SPcoeffs);
+
+        if (nBalls == 3){
+            Shootmode = true;
+        }
+
+        if (nBalls == 0){
+            Shootmode = false;
+        }
+
+        if (nBalls < 0){
+            nBalls = 0;
+        } else if (nBalls > 3) {
+            nBalls = 3;
+        }
+
+
+        BPresence = laser.getState();
+
+        SpindexPos = (spindexEncoder.getVoltage() / 3.3) * 2 * Math.PI;
+        SpindexPos = normalizeRadians(SpindexPos);
+        targetPosRad = normalizeRadians(targetPosRad);
+
+        AngleError =
+                MathFunctions.getTurnDirection(targetPosRad, SpindexPos) *
+                        MathFunctions.getSmallestAngleDifference(targetPosRad, SpindexPos);
+
+        spindexPID.setSetPoint(0);
+        double power = spindexPID.calculate(AngleError);
+
+        spindex.setPower(power);
+
+
+        FtcDashboard.getInstance().getTelemetry().addData("shootMode", Shootmode);
+        FtcDashboard.getInstance().getTelemetry().addData("spindex crudo", SpindexPos);
+        FtcDashboard.getInstance().getTelemetry().addData("target pos sp", targetPosRad);
+        FtcDashboard.getInstance().getTelemetry().addData("angleerr", AngleError);
+        FtcDashboard.getInstance().getTelemetry().addData("presencia",BPresence);
+        FtcDashboard.getInstance().getTelemetry().addData("nBalls",nBalls);
     }
 }

@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -11,9 +11,9 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
 import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
-import org.firstinspires.ftc.teamcode.commands.hook.HookUpCMD;
 import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
@@ -22,18 +22,19 @@ import org.firstinspires.ftc.teamcode.commands.intake.LiftDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.LiftHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.LiftUpCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
+import org.firstinspires.ftc.teamcode.commands.sorter.AutoIntakeModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.IntakeModeCMD;
-import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
+import org.firstinspires.ftc.teamcode.commands.sorter.LastPosSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
-import org.firstinspires.ftc.teamcode.commands.sorter.SpinSorterCMD;
+import org.firstinspires.ftc.teamcode.commands.sorter.SpindexModeDefaultCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
-import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
 
 public abstract class TeleOp extends OpModeCommand {
 
     GamepadEx Chasis;
     GamepadEx Garra;
+
 
     public TeleOp(Alliance alliance) {
         super(alliance);
@@ -49,14 +50,18 @@ public abstract class TeleOp extends OpModeCommand {
         }));
 
 
-
         new HookDownCMD(hookSubsystem).schedule();
 
+
+        CommandScheduler.getInstance().setDefaultCommand(spindexSubsystem, new SpindexModeDefaultCMD(
+                spindexSubsystem,
+                new ShootModeCMD(spindexSubsystem), // switch to shoot mode
+                new AutoIntakeModeCMD(spindexSubsystem)
+        ));
 
         CommandScheduler.getInstance().setDefaultCommand(pedroSubsystem, pedroSubsystem.fieldCentricCmd(gamepad1));
 
         CommandScheduler.getInstance().setDefaultCommand(liftSubsystem, new LiftHoldCMD(liftSubsystem));
-
 
 
         Garra.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem, llSubsystem));
@@ -69,7 +74,7 @@ public abstract class TeleOp extends OpModeCommand {
         );
 
         IntakeIn.whenHeld(new IntakeInCMD(intakeSubsystem));
-        IntakeIn.whenPressed(new InstantCommand(() -> spindexSubsystem.setShootMode(false)));
+        IntakeIn.whenPressed(new InstantCommand(() -> spindexSubsystem.setShootmode(false)));
 
         Button IntakeOut = new GamepadButton(
                 Garra, GamepadKeys.Button.B
@@ -93,31 +98,29 @@ public abstract class TeleOp extends OpModeCommand {
                 Garra, GamepadKeys.Button.LEFT_BUMPER
         );
 
-        lastB.whenPressed(new NextPosSorterCMD(spindexSubsystem, false));
+        lastB.whenPressed(new LastPosSorterCMD(spindexSubsystem));
 
         Button shootmode = new GamepadButton(
                 Garra, GamepadKeys.Button.DPAD_UP
         );
 
         shootmode.whenPressed(
-                new ShootModeCMD(spindexSubsystem, hookSubsystem)
+                new ShootModeCMD(spindexSubsystem)
         );
-
-
 
 
         Button nextB = new GamepadButton(
                 Garra, GamepadKeys.Button.RIGHT_BUMPER
         );
 
-        nextB.whenPressed(new NextPosSorterCMD(spindexSubsystem, true));
+        nextB.whenActive(new NextPosSorterCMD(spindexSubsystem), false);
 
         Button intakemode = new GamepadButton(
                 Garra, GamepadKeys.Button.DPAD_DOWN
         );
 
         intakemode.whenPressed(
-                new IntakeModeCMD(spindexSubsystem, hookSubsystem)
+                new IntakeModeCMD(spindexSubsystem)
         );
 
         Button AutoShoot = new GamepadButton(
@@ -125,17 +128,15 @@ public abstract class TeleOp extends OpModeCommand {
         );
 
         AutoShoot.whenPressed(
-                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem)
+                new Shoot3BallsCMD(hookSubsystem, spindexSubsystem)
         );
-
-
 
 
         Trigger hookUpAndDown = new Trigger(() -> gamepad2.right_trigger >= 0.1);
 
-        hookUpAndDown.whenActive(new UpAndDownCMD(hookSubsystem));
+        hookUpAndDown.whenActive(new UpAndDownCMD(hookSubsystem, spindexSubsystem));
 
-        Trigger hookDown = new Trigger(()-> gamepad2.left_trigger >= 0.1);
+        Trigger hookDown = new Trigger(() -> gamepad2.left_trigger >= 0.1);
 
         hookDown.whenActive(new HookDownCMD(hookSubsystem));
 

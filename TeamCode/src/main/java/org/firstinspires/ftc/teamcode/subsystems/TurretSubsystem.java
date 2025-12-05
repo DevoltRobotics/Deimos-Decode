@@ -14,18 +14,20 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 public class TurretSubsystem extends SubsystemBase {
 
     CRServo Torreta;
+    CRServo Torreta2;
 
-    public static PIDFCoefficients llPidfCoeffs = new PIDFCoefficients(0.017, 0, 0.001, 0);
+    public static PIDFCoefficients llPidfCoeffs = new PIDFCoefficients(0.035, 0, 0.0015, 0);
     public static double Minimum = 0.043;
 
 
     public TurretSubsystem(HardwareMap hMap) {
         Torreta = hMap.get(CRServo.class, "torreta");
-        // Torreta.setDirection(DcMotorSimple.Direction.REVERSE);
+        Torreta2 = hMap.get(CRServo.class,"torreta2");
     }
 
     public void setTurretPower(double power) {
         Torreta.setPower(power);
+        Torreta2.setPower(power);
     }
 
     @Override

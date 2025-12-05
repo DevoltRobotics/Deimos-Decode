@@ -19,12 +19,9 @@ import org.firstinspires.ftc.teamcode.Pattern;
 import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
 import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
-import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
-import org.firstinspires.ftc.teamcode.commands.sorter.SpinSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
-import org.opencv.core.Mat;
 
 @Autonomous(name = "BlueA", group = "##", preselectTeleOp = "TeleOpBlue")
 public class BlueA extends OpModeCommand {
@@ -98,15 +95,12 @@ public class BlueA extends OpModeCommand {
                                 new WaitCommand(1500),
 
                                 // shoot
-                                new SpinSorterCMD(spindexSubsystem, Math.toRadians(offset)),
                                 new WaitCommand(1000),
-                                new UpAndDownCMD(hookSubsystem),
-                                new SpinSorterCMD(spindexSubsystem, Math.toRadians(offset + 120)),
+                                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
                                 new WaitCommand(1000),
-                                new UpAndDownCMD(hookSubsystem),
-                                new SpinSorterCMD(spindexSubsystem, Math.toRadians(offset + 240)),
+                                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
                                 new WaitCommand(1000),
-                                new UpAndDownCMD(hookSubsystem),
+                                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
                                 new WaitCommand(400),
                                 pedroSubsystem.followPathCmd(shootPath)
                         )

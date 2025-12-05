@@ -1,17 +1,33 @@
 package org.firstinspires.ftc.teamcode.commands.sorter;
 
-import com.seattlesolvers.solverslib.command.InstantCommand;
-import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
+import com.seattlesolvers.solverslib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
-public class ShootModeCMD extends InstantCommand {
+public class ShootModeCMD extends CommandBase {
 
-    public ShootModeCMD(SpindexSubsystem spindex, HookSubsystem hook) {
-        super(
-                () -> {
-                    spindex.setNBalls(3);       // resetea el contador de index
-                    hook.nFlick = 0;             // reseteas los flicks si quieres
-                }
-        );
+    private final SpindexSubsystem spindex;
+
+    public ShootModeCMD(SpindexSubsystem spindex) {
+        this.spindex = spindex;
+        addRequirements(spindex);
     }
+
+    @Override
+    public void initialize() {
+        if(spindex.getFirstInitSho()) {
+            spindex.setTargetPosRad(spindex.ShootPos);
+            spindex.setFirstInitsho(false);
+            spindex.setFirstInitIn(true);
+        }
+        spindex.setShootmode(true);
+    }
+
+
+
+    @Override
+    public boolean isFinished() {
+        return spindex.getAngleError() < Math.toRadians(3);
+    }
+
+
 }
