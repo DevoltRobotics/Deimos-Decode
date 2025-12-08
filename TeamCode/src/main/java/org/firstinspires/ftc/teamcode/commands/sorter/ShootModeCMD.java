@@ -15,7 +15,7 @@ public class ShootModeCMD extends CommandBase {
     @Override
     public void initialize() {
         if(spindex.getFirstInitSho()) {
-            spindex.setTargetPosRad(spindex.ShootPos);
+            spindex.setTargetPos(spindex.ShootPos);
             spindex.setFirstInitsho(false);
             spindex.setFirstInitIn(true);
         }
@@ -26,7 +26,7 @@ public class ShootModeCMD extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return spindex.getAngleError() < Math.toRadians(3);
+        return true;
     }
 
 

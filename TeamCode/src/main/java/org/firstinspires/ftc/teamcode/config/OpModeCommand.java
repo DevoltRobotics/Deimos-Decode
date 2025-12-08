@@ -72,7 +72,7 @@ public abstract class OpModeCommand extends OpMode {
                 intakeSubsystem = new IntakeSubsystem(hardwareMap),
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
                 turretSubsystem = new TurretSubsystem(hardwareMap),
-                spindexSubsystem = new SpindexSubsystem(hardwareMap,hookSubsystem),
+                spindexSubsystem = new SpindexSubsystem(hardwareMap),
                 llSubsystem = new LLSubsystem(hardwareMap, alliance),
                 pedroSubsystem = new PedroSubsystem(hardwareMap),
                 liftSubsystem = new LiftSubsystem(hardwareMap)

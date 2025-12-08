@@ -34,18 +34,19 @@ public class shooter_test extends OpModeCommand {
         new RunCommand(()->{
             telemetry.update();
         }).schedule();
+
         gamepadEx1 = new GamepadEx(gamepad1);
 
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(new TurretAutoLLCMD(turretSubsystem, llSubsystem), new RunCommand(() -> {
-            turretSubsystem.setTurretPower(gamepad1.left_stick_x);
-        }));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(
+                new TurretAutoLLCMD(turretSubsystem, llSubsystem),
+                new RunCommand(() -> turretSubsystem.setTurretPower(gamepad1.left_stick_x)
+        ));
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new ShooterShootCmd(shooterSubsystem, () -> TV));
         gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem,llSubsystem));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).toggleWhenActive(new UpAndDownCMD(hookSubsystem,spindexSubsystem));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).toggleWhenActive(new NextPosSorterCMD(spindexSubsystem));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_UP).toggleWhenActive(new ShootModeCMD(spindexSubsystem));
 
-
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenActive(new UpAndDownCMD(hookSubsystem,spindexSubsystem));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenActive(new NextPosSorterCMD(spindexSubsystem));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenActive(new ShootModeCMD(spindexSubsystem));
     }
 }

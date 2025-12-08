@@ -13,13 +13,14 @@ public class ShooterAutoLLCMD extends CommandBase {
     private static InterpLUT VelocityLUT = new InterpLUT();
 
     static {
-        VelocityLUT.add(0.12, 1900);
-        VelocityLUT.add(0.2, 1670);
-        VelocityLUT.add(0.25, 1580);
-        VelocityLUT.add(0.4, 1445);
-        VelocityLUT.add(0.714, 1280);
-        VelocityLUT.add(3.6, 1130);
-        VelocityLUT.add(10, 0);
+        VelocityLUT.add(0.000000000000000012, 1900);
+
+        VelocityLUT.add(0.20, 1540);
+        VelocityLUT.add(0.35, 1400);
+        VelocityLUT.add(0.63, 1270); // new
+        VelocityLUT.add(2, 1175);
+
+        VelocityLUT.add(1000000000, 0);
 
 
         VelocityLUT.createLUT();
@@ -44,7 +45,7 @@ public class ShooterAutoLLCMD extends CommandBase {
             if(Area != null){
                 double velocity = VelocityLUT.get(Area);
 
-                subsystem.setTargetVelocity(Range.clip(velocity, 1050,1580));
+                subsystem.setTargetVelocity(Range.clip(velocity, 1175,1540));
             }
         }
     }

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.commands.turret;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.util.MovingStatistics;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
@@ -18,6 +19,7 @@ public class TurretAutoLLCMD extends CommandBase {
 
     double offset = 0;
 
+    MovingStatistics llAverage = new MovingStatistics(5);
 
     public TurretAutoLLCMD(TurretSubsystem subsystem, LLSubsystem ll) {
         this.subsystem = subsystem;
@@ -26,7 +28,6 @@ public class TurretAutoLLCMD extends CommandBase {
         llPidf = new PIDFController(TurretSubsystem.llPidfCoeffs);
 
         addRequirements(subsystem);
-
     }
 
     @Override
@@ -39,8 +40,8 @@ public class TurretAutoLLCMD extends CommandBase {
 
         if (ll.result != null && ll.result.isValid()) {
             Double Area = ll.getAllianceTA();
-            if (Area != null) {
 
+            if (Area != null) {
                 if (Area > 0.55) {
                     offset = 0;
                 } else if (Area < 0.55) {
@@ -48,28 +49,24 @@ public class TurretAutoLLCMD extends CommandBase {
                 }
             }
 
-            llPidf.setSetPoint(0);
-
             Double tx = ll.getAllianceTX();
 
+            if(tx != null) {
+                double txOffset = ll.alliance == Alliance.BLUE ? tx - offset : tx + offset;
+                llAverage.add(txOffset);
 
-            if (ll.alliance == Alliance.BLUE) {
-                if (tx != null) {
-                    double turretPower = llPidf.calculate(tx - offset);
-                    subsystem.setTurretPower(turretPower);
-                } else {
-                    subsystem.setTurretPower(0);
-                }
-            } else if (ll.alliance == Alliance.RED) {
+                double mean = llAverage.getMean();
 
-                if (tx != null) {
-                    double turretPower = llPidf.calculate(tx + offset);
-                    subsystem.setTurretPower(turretPower);
-                } else {
-                    subsystem.setTurretPower(0);
-                }
+                FtcDashboard.getInstance().getTelemetry().addData("ll tX mean", mean);
+
+                double turretPower = llPidf.calculate(mean, 0);
+
+                subsystem.setTurretPower(turretPower);
+            } else {
+                subsystem.setTurretPower(0);
             }
+        } else {
+            subsystem.setTurretPower(0);
         }
-
     }
 }

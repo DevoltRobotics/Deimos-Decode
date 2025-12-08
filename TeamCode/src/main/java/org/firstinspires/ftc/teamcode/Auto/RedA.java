@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Auto;
 
+import com.pedropathing.geometry.BezierCurve;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import com.pedropathing.geometry.BezierLine;
@@ -9,19 +10,22 @@ import com.pedropathing.paths.PathChain;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
-import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.Pattern;
+import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
 import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
-import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
-import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
+import org.firstinspires.ftc.teamcode.commands.turret.TurretPowerCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
+import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
 @Autonomous(name = "RedA", group = "##", preselectTeleOp = "TeleOpRed")
 public class RedA extends OpModeCommand {
@@ -34,78 +38,161 @@ public class RedA extends OpModeCommand {
 
     @Override
     public void initialize() {
-        // Pose inicial (ejemplo de Pedro)
-        Pose startPose = new Pose(81.46788990825688, 8.80733944954129, Math.toRadians(180));
+        spindexSubsystem.setnBalls(3);
+        Pose startPose = new Pose(123.90184049079755, 119.04294478527608, Math.toRadians(0));
         pedroSubsystem.follower.setStartingPose(startPose);
 
         llSubsystem.setObeliskPipeline();
 
-        // Pose objetivo usando los mismos números del ejemplo,
-        // pero ahora sí como destino "real"
-        Pose targetPose = new Pose(98.80733944954129, 20.32110091743119, Math.toRadians(0));
 
-        // Path que SÍ tiene distancia: de startPose -> targetPose
-        PathChain path1 = pedroSubsystem.follower
+        Pose ShootPos = new Pose(86.521, 83, Math.toRadians(0));
+
+        Pose Pick1Cycle = new Pose(120.14723926380367, 77.61349693251533, 0);
+
+        Pose P3rdCycle = new Pose(120, 56, 0);
+
+        Pose P4thCycle = new Pose(120, 31.8, 0);
+
+        PathChain FShoot = pedroSubsystem.follower
                 .pathBuilder()
                 .addPath(
                         new BezierLine(
-                                startPose,      // antes empezabas aquí
-                                targetPose      // ahora terminas aquí
+                                startPose,
+                                ShootPos
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        startPose.getHeading(),
-                        targetPose.getHeading()
-                )
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
-        // Script del auton: seguir path1 y luego hacer tus comandos
-        autoCommand = new ParallelCommandGroup(
-                obeliskPrepareCmd(path1),
-                new IntakeHoldCMD(intakeSubsystem));
-    }
-
-    public Command obeliskPrepareCmd(PathChain shootPath) {
-        return new SequentialCommandGroup(
-                new HookDownCMD(hookSubsystem),
-                new RunCommand(() -> llSubsystem.getObelisk()).withTimeout(1500),
-
-                new ConditionalCommand(
-                        moveAndShootThreeCmd(60, shootPath).asProxy(), // GPP
-                        new ConditionalCommand(
-                                moveAndShootThreeCmd(300, shootPath).asProxy(), // PGP
-                                moveAndShootThreeCmd(180, shootPath).asProxy(),// PPG
-                                () -> llSubsystem.getObelisk() == Pattern.PGP
-                        ),
-                        () -> llSubsystem.getObelisk() == Pattern.GPP
-                )
-        );
-    }
-
-    public Command moveAndShootThreeCmd(double offset, PathChain shootPath) {
-        return new SequentialCommandGroup(
-                // prepare to shoot
-
-
-                new ParallelCommandGroup(
-                        new TurretAutoLLCMD(turretSubsystem, llSubsystem),
-                        new ShooterShootCmd(shooterSubsystem,()-> 1560),
-                        new SequentialCommandGroup(
-                                new WaitCommand(1500),
-
-                                // shoot
-                                new WaitCommand(1000),
-                                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
-                                new WaitCommand(1000),
-                                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
-                                new WaitCommand(1000),
-                                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
-                                new WaitCommand(400),
-                                pedroSubsystem.followPathCmd(shootPath)
+        PathChain GoTo1Cycle = pedroSubsystem.follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                ShootPos,
+                                Pick1Cycle
                         )
                 )
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .build();
+
+        PathChain Shoot2Cycle = pedroSubsystem.follower
+                .pathBuilder()
+                .addPath(new BezierLine(
+                        Pick1Cycle,
+                        ShootPos
+                ))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .build();
+
+        PathChain Pick3rdCycle = pedroSubsystem.follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                ShootPos,
+                                P3rdCycle,
+                                new Pose(119.926, 59.190)
+                        )
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .build();
+        PathChain Shoot3rdCycle = pedroSubsystem.follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                P3rdCycle,
+                                ShootPos
+                        )
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .build();
+        PathChain Pick4thCycle = pedroSubsystem.follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                ShootPos,
+                                P4thCycle,
+                                new Pose(119.043, 31.804)
+                        )
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .build();
+
+        //TODO
+        autoCommand = new SequentialCommandGroup(
+                pedroSubsystem.followPathCmd(FShoot),
+
+                new ParallelDeadlineGroup(
+                        new SequentialCommandGroup(
+                                new HookDownCMD(hookSubsystem),
+                                new RunCommand(() -> llSubsystem.getObelisk()).withTimeout(1500),
+
+                                new TurretPowerCMD(turretSubsystem, -0.5).withTimeout(500), // turn slightly
+
+                                ObeliskDecision(
+                                        shootThree(SpindexSubsystem.ShootPos2), // GPP
+                                        shootThree(SpindexSubsystem.ShootPos), // PGP
+                                        shootThree(SpindexSubsystem.ShootPos3) // PPG
+                                )
+                        ),
+
+                        new IntakeHoldCMD(intakeSubsystem)
+                ),
+
+
+                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.5)),
+                pedroSubsystem.followPathCmd(GoTo1Cycle),
+
+                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(1)),
+                pedroSubsystem.followPathCmd(Shoot2Cycle),
+
+                ObeliskDecision(
+                        shootThree(SpindexSubsystem.ShootPos3), // GPP
+                        shootThree(SpindexSubsystem.ShootPos2), // PGP
+                        shootThree(SpindexSubsystem.ShootPos) // PPG
+                ),
+                
+                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.5)),
+                pedroSubsystem.followPathCmd(Pick3rdCycle),
+
+                ObeliskDecision(
+                        shootThree(SpindexSubsystem.ShootPos2), // GPP
+                        shootThree(SpindexSubsystem.ShootPos), // PGP
+                        shootThree(SpindexSubsystem.ShootPos3) // PPG
+                ),
+
+                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.5)),
+                pedroSubsystem.followPathCmd(Pick4thCycle)
         );
     }
+
+    public Command ObeliskDecision(Command GPP, Command PGP, Command PPG) {
+        return new ConditionalCommand(
+                GPP, // GPP
+                new ConditionalCommand(
+                        PGP, // PGP
+                        PPG,// PPG
+                        () -> llSubsystem.getObelisk() == Pattern.PGP
+                ),
+                () -> llSubsystem.getObelisk() == Pattern.GPP
+        );
+    }
+
+
+    public Command shootThree(double spindexOffset) {
+        return new ParallelDeadlineGroup(
+                // DEADLINE: esta secuencia define cuánto dura todo
+                new SequentialCommandGroup(
+                        new WaitCommand(1500),
+                        new Shoot3BallsCMD(hookSubsystem, spindexSubsystem, spindexOffset)
+                ),
+
+                new RunCommand(() -> telemetry.addData("Running", "shootThreeCmd at" + System.currentTimeMillis())),
+
+                new TurretAutoLLCMD(turretSubsystem, llSubsystem),
+                new ShooterAutoLLCMD(shooterSubsystem, llSubsystem)
+        );
+    }
+
 
     @Override
     public void start() {

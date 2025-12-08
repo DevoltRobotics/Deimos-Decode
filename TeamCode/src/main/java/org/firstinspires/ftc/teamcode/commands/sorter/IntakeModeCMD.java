@@ -15,21 +15,19 @@ public class IntakeModeCMD extends CommandBase {
 
     @Override
     public void initialize() {
-        spindex.setTargetPosRad(spindex.IntakePos);
+        spindex.setTargetPos(spindex.IntakePos);
         done = false;
         spindex.setShootmode(false);
     }
 
     @Override
     public void execute() {
-        if (spindex.getAngleError() < Math.toRadians(3)) {  // tolerancia angular
-            done = true;
-        }
+
     }
 
     @Override
     public boolean isFinished() {
-        return done;
+        return true;
     }
 
 

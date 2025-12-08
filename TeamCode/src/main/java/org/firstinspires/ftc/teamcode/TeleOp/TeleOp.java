@@ -45,9 +45,10 @@ public abstract class TeleOp extends OpModeCommand {
         Chasis = new GamepadEx(gamepad1);
         Garra = new GamepadEx(gamepad2);
 
-        Garra.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(new TurretAutoLLCMD(turretSubsystem, llSubsystem), new RunCommand(() -> {
-            turretSubsystem.setTurretPower(gamepad2.left_stick_x);
-        }));
+        Garra.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(
+                new TurretAutoLLCMD(turretSubsystem, llSubsystem),
+                new RunCommand(() -> turretSubsystem.setTurretPower(gamepad2.left_stick_x))
+        );
 
 
         new HookDownCMD(hookSubsystem).schedule();
@@ -74,7 +75,6 @@ public abstract class TeleOp extends OpModeCommand {
         );
 
         IntakeIn.whenHeld(new IntakeInCMD(intakeSubsystem));
-        IntakeIn.whenPressed(new InstantCommand(() -> spindexSubsystem.setShootmode(false)));
 
         Button IntakeOut = new GamepadButton(
                 Garra, GamepadKeys.Button.B

@@ -12,6 +12,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public IntakeSubsystem(HardwareMap hMap){
         intake = hMap.get(DcMotor.class,"intake");
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
 
@@ -28,6 +29,6 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void Hold(){
-        intake.setPower(0.15);
+        intake.setPower(0.4);
     }
 }

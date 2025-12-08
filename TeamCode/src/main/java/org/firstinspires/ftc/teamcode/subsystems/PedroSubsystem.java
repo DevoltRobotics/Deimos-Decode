@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
@@ -108,6 +109,11 @@ public class PedroSubsystem extends SubsystemBase {
         @Override
         public void initialize() {
             follower.followPath(path, true);
+        }
+
+        @Override
+        public void execute() {
+            FtcDashboard.getInstance().getTelemetry().addData("FollowPathChainCmd", "Following to " + path.endPoint());
         }
 
         @Override

@@ -21,7 +21,7 @@ public class LastPosSorterCMD extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return spindex.getAngleError() < Math.toRadians(3);
+        return true;
     }
 
 

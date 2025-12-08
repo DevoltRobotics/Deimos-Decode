@@ -26,11 +26,11 @@ public class AutoIntakeModeCMD extends CommandBase {
         // Opcional: resetear estado
         objectLatched = false;
         lastTriggerTimeMs = -9999;
-        lastTriggerPosRad = spindex.getSpindexPos();
+        lastTriggerPosRad = spindex.getTargetPos();
         timer.reset();
 
         if(spindex.getFirstInitIn()) {
-            spindex.setTargetPosRad(spindex.IntakePos);
+            spindex.setTargetPos(spindex.IntakePos);
             spindex.setFirstInitIn(false);
             spindex.setFirstInitsho(true);
         }
@@ -42,7 +42,7 @@ public class AutoIntakeModeCMD extends CommandBase {
     @Override
     public void execute() {
         double nowMs = timer.milliseconds();
-        double pos = spindex.getSpindexPos();
+        double pos = spindex.getTargetPos();
 
         boolean Bpresence = spindex.getBPresence();
 
@@ -57,14 +57,11 @@ public class AutoIntakeModeCMD extends CommandBase {
         }
 
         double dt = nowMs - lastTriggerTimeMs;
-        double dAngle = spindex.getAngleDiff(pos, lastTriggerPosRad);
 
-        FtcDashboard.getInstance().getTelemetry().addData("dAngle", dAngle);
         FtcDashboard.getInstance().getTelemetry().addData("lastTriggerPosRad", lastTriggerPosRad);
 
         if (!Bpresence
                 && dt > SpindexSubsystem.TRIGGER_COOLDOWN_MS
-                && dAngle >= SpindexSubsystem.MIN_ADVANCE_RAD
         ) {
             objectLatched = false;
         }
