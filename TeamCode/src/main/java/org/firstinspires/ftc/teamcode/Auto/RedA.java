@@ -8,8 +8,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
 import com.seattlesolvers.solverslib.command.Command;
-import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
@@ -21,9 +19,11 @@ import org.firstinspires.ftc.teamcode.Pattern;
 import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
 import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
-import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
-import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
+import org.firstinspires.ftc.teamcode.commands.sorter.AutoIntakeModeCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretPowerCMD;
+import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
@@ -31,6 +31,8 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 public class RedA extends OpModeCommand {
 
     private Command autoCommand;
+
+    Pattern obeliskPattern;
 
     public RedA() {
         super(Alliance.RED);
@@ -119,45 +121,52 @@ public class RedA extends OpModeCommand {
 
         //TODO
         autoCommand = new SequentialCommandGroup(
-                pedroSubsystem.followPathCmd(FShoot),
-
                 new ParallelDeadlineGroup(
-                        new SequentialCommandGroup(
-                                new HookDownCMD(hookSubsystem),
-                                new RunCommand(() -> llSubsystem.getObelisk()).withTimeout(1500),
-
-                                new TurretPowerCMD(turretSubsystem, -0.5).withTimeout(500), // turn slightly
-
-                                ObeliskDecision(
-                                        shootThree(SpindexSubsystem.ShootPos2), // GPP
-                                        shootThree(SpindexSubsystem.ShootPos), // PGP
-                                        shootThree(SpindexSubsystem.ShootPos3) // PPG
-                                )
+                        pedroSubsystem.followPathCmd(FShoot),
+                        new IntakeHoldCMD(intakeSubsystem)
                         ),
 
-                        new IntakeHoldCMD(intakeSubsystem)
+                new HookDownCMD(hookSubsystem),
+                new RunCommand(() ->
+                        // eval obelisk here to store for the rest of the auto
+                        obeliskPattern = llSubsystem.getObelisk()
+                ).withTimeout(800),
+
+                new TurretToPosCMD(turretSubsystem, 300), // turn slightly
+
+                shootThree(
+                        SpindexSubsystem.ShootPos2, // GPP
+                        SpindexSubsystem.ShootPos, // PGP
+                        SpindexSubsystem.ShootPos3, // PPG
+                        158, 1200
                 ),
 
-
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.5)),
-                pedroSubsystem.followPathCmd(GoTo1Cycle),
+                new ParallelDeadlineGroup(
+                        pedroSubsystem.followPathCmd(GoTo1Cycle),
+                        new AutoIntakeModeCMD(spindexSubsystem),
+                        new IntakeInCMD(intakeSubsystem)
+                ),
+
 
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(1)),
                 pedroSubsystem.followPathCmd(Shoot2Cycle),
 
-                ObeliskDecision(
-                        shootThree(SpindexSubsystem.ShootPos3), // GPP
-                        shootThree(SpindexSubsystem.ShootPos2), // PGP
-                        shootThree(SpindexSubsystem.ShootPos) // PPG
+                shootThree(
+                        SpindexSubsystem.ShootPos3, // GPP
+                        SpindexSubsystem.ShootPos2, // PGP
+                        SpindexSubsystem.ShootPos,  // PPG
+                        158, 1200
                 ),
-                
+
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.5)),
                 pedroSubsystem.followPathCmd(Pick3rdCycle),
 
-                ObeliskDecision(
-                        shootThree(SpindexSubsystem.ShootPos2), // GPP
-                        shootThree(SpindexSubsystem.ShootPos), // PGP
-                        shootThree(SpindexSubsystem.ShootPos3) // PPG
+                shootThree(
+                        SpindexSubsystem.ShootPos2, // GPP
+                        SpindexSubsystem.ShootPos, // PGP
+                        SpindexSubsystem.ShootPos3, // PPG
+                        158, 1200
                 ),
 
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.5)),
@@ -165,31 +174,28 @@ public class RedA extends OpModeCommand {
         );
     }
 
-    public Command ObeliskDecision(Command GPP, Command PGP, Command PPG) {
-        return new ConditionalCommand(
-                GPP, // GPP
-                new ConditionalCommand(
-                        PGP, // PGP
-                        PPG,// PPG
-                        () -> llSubsystem.getObelisk() == Pattern.PGP
-                ),
-                () -> llSubsystem.getObelisk() == Pattern.GPP
-        );
-    }
+    public Command shootThree(double gppSpindexOffset, double pgpSpindexOffset, double ppgSpindexOffset, double turretAngle, int shooterVelocity) {
+        return new SequentialCommandGroup(
+                new WaitCommand(800),
+                new Shoot3BallsCMD(hookSubsystem, spindexSubsystem, () -> {
+                    switch (obeliskPattern) { // we should have already detected and stored Pattern by now
+                        case UNKNOWN: // when unknown, return GPP
+                        case GPP:
+                            return gppSpindexOffset;
+                        case PGP:
+                            return pgpSpindexOffset;
+                        case PPG:
+                            return ppgSpindexOffset;
+                    }
 
+                    return gppSpindexOffset; // when unknown, return GPP
+                }),
 
-    public Command shootThree(double spindexOffset) {
-        return new ParallelDeadlineGroup(
-                // DEADLINE: esta secuencia define cuánto dura todo
-                new SequentialCommandGroup(
-                        new WaitCommand(1500),
-                        new Shoot3BallsCMD(hookSubsystem, spindexSubsystem, spindexOffset)
-                ),
-
-                new RunCommand(() -> telemetry.addData("Running", "shootThreeCmd at" + System.currentTimeMillis())),
-
-                new TurretAutoLLCMD(turretSubsystem, llSubsystem),
-                new ShooterAutoLLCMD(shooterSubsystem, llSubsystem)
+                new InstantCommand(() -> log(2000, "shootThree", "Done with sequence"))
+        ).raceWith(
+                new IntakeHoldCMD(intakeSubsystem),
+                new TurretToPosCMD(turretSubsystem, turretAngle),
+                new ShooterShootCmd(shooterSubsystem, shooterVelocity)
         );
     }
 
@@ -203,16 +209,13 @@ public class RedA extends OpModeCommand {
     }
 
     @Override
-    public void loop() {
-        // 2) Correr el scheduler UNA vez por loop
-        CommandScheduler.getInstance().run();
-
-        // 3) Telemetría para debug
+    public void run() {
+        // Telemetría para debug
         Pose pose = pedroSubsystem.follower.getPose();
+
         telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());
         telemetry.addData("X", pose.getX());
         telemetry.addData("Y", pose.getY());
         telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));
-        telemetry.update();
     }
 }

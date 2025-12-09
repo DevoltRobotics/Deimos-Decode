@@ -11,8 +11,10 @@ import org.firstinspires.ftc.teamcode.commands.sorter.SpindexPosCMD;
 import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
+import java.util.function.DoubleSupplier;
+
 public class Shoot3BallsCMD extends SequentialCommandGroup {
-    public Shoot3BallsCMD(HookSubsystem hookSubsystem, SpindexSubsystem spindexSubsystem, Double startingSpindex) {
+    public Shoot3BallsCMD(HookSubsystem hookSubsystem, SpindexSubsystem spindexSubsystem, DoubleSupplier startingSpindex) {
         if(startingSpindex != null) {
             addCommands(new SpindexPosCMD(spindexSubsystem, startingSpindex));
         } else {
@@ -21,12 +23,17 @@ public class Shoot3BallsCMD extends SequentialCommandGroup {
 
         addCommands(
                 new WaitCommand(400),
+
                 new UpAndDownCMD(hookSubsystem,spindexSubsystem),
                 new NextPosSorterCMD(spindexSubsystem),
+
                 new WaitCommand(200),
+
                 new UpAndDownCMD(hookSubsystem,spindexSubsystem),
                 new NextPosSorterCMD(spindexSubsystem),
+
                 new WaitCommand(200),
+
                 new UpAndDownCMD(hookSubsystem,spindexSubsystem)
         );
     }

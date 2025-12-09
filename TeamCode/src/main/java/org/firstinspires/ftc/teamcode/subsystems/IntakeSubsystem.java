@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
+
 public class IntakeSubsystem extends SubsystemBase {
 
     DcMotor intake;
@@ -14,6 +16,7 @@ public class IntakeSubsystem extends SubsystemBase {
         intake = hMap.get(DcMotor.class,"intake");
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        setDefaultCommand(new IntakeHoldCMD(this));
     }
 
     public void In(){

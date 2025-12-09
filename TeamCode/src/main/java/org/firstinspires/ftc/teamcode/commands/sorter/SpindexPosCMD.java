@@ -5,22 +5,30 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
+import java.util.function.DoubleSupplier;
+
 public class SpindexPosCMD extends CommandBase {
 
     SpindexSubsystem spindexSubsystem;
     ElapsedTime timer = new ElapsedTime();
 
     double error;
-    double pos;
+    DoubleSupplier position;
+
+    public SpindexPosCMD(SpindexSubsystem spindexSubsystem, DoubleSupplier pos) {
+        this.spindexSubsystem = spindexSubsystem;
+        this.position = pos;
+        addRequirements(spindexSubsystem);
+    }
 
     public SpindexPosCMD(SpindexSubsystem spindexSubsystem, double pos) {
-        this.spindexSubsystem = spindexSubsystem;
-        this.pos = pos;
-        addRequirements(spindexSubsystem);
+        this(spindexSubsystem, () -> pos);
     }
 
     @Override
     public void initialize() {
+        double pos = this.position.getAsDouble();
+
         error = Math.abs(pos - spindexSubsystem.getTargetPos());
         spindexSubsystem.setTargetPos(pos);
 

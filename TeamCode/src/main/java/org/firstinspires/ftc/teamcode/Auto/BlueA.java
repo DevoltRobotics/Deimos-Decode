@@ -117,10 +117,7 @@ public class BlueA extends OpModeCommand {
     }
 
     @Override
-    public void loop() {
-        // 2) Correr el scheduler UNA vez por loop
-        CommandScheduler.getInstance().run();
-
+    public void run() {
         // 3) Telemetría para debug
         Pose pose = pedroSubsystem.follower.getPose();
         telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());

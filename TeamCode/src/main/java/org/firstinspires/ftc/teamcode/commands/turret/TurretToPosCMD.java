@@ -32,7 +32,9 @@ public class TurretToPosCMD extends CommandBase {
         pidf.setTolerance(1);
         pidf.setMinimumOutput(TurretSubsystem.Minimum);
 
-        subsystem.setTurretPower(pidf.calculate(subsystem.getCurrentPosition(), targetPos));
+        subsystem.setTurretPower(-pidf.calculate(subsystem.getCurrentPosition(), targetPos));
+
+        FtcDashboard.getInstance().getTelemetry().addData("turret target", targetPos);
     }
 
     @Override

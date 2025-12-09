@@ -15,13 +15,14 @@ public class ShooterShootCmd extends CommandBase {
         this.shooterSubsystem = shooterSubsystem;
         this.targetvelocity = targetvelocity;
         addRequirements(shooterSubsystem);
-
-
     }
 
+    public ShooterShootCmd(ShooterSubsystem shooterSubsystem, double targetvelocity) {
+        this(shooterSubsystem, () -> targetvelocity);
+    }
 
     @Override
-    public void execute(){
+    public void execute() {
         shooterSubsystem.setTargetVelocity(targetvelocity.getAsDouble());
     }
 

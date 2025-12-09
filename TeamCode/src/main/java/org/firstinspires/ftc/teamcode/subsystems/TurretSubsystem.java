@@ -18,15 +18,16 @@ public class TurretSubsystem extends SubsystemBase {
     CRServo Torreta;
     CRServo Torreta2;
 
-    public static PIDFCoefficients encPidfCoeffs = new PIDFCoefficients(0.025, 0, 0, 0.05);
-    public static PIDFCoefficients llPidfCoeffs = new PIDFCoefficients(0.025,0,0.001,0.05);
+    public static double limit = 1300;
+    public static PIDFCoefficients encPidfCoeffs = new PIDFCoefficients(0.007, 0, 0.0003, 0);
+    public static PIDFCoefficients llPidfCoeffs = new PIDFCoefficients(0.022,0,0.00055,0);
 
-    public static double Minimum = 0.043;
+    public static double Minimum = 0.037;
 
     AnalogInput encoder;
-    Double lastPos = null;
+    static Double lastPos = null;
 
-    double currentRelativePos;
+    static double currentRelativePos;
 
     public TurretSubsystem(HardwareMap hMap) {
         Torreta = hMap.get(CRServo.class, "torreta");
@@ -35,8 +36,13 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void setTurretPower(double power) {
-        Torreta.setPower(power);
-        Torreta2.setPower(power);
+        if((currentRelativePos < 20 && power > 0) || (currentRelativePos > limit && power < 0)) {
+            Torreta.setPower(0);
+            Torreta2.setPower(0);
+        } else {
+            Torreta.setPower(power);
+            Torreta2.setPower(power);
+        }
     }
 
     @Override
@@ -57,6 +63,10 @@ public class TurretSubsystem extends SubsystemBase {
 
     public double getCurrentPosition() {
         return currentRelativePos;
+    }
+
+    public void resetRelative() {
+        currentRelativePos = 0;
     }
 
 }
