@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.RunCommand;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -35,7 +33,6 @@ public abstract class TeleOp extends OpModeCommand {
     GamepadEx Chasis;
     GamepadEx Garra;
 
-
     public TeleOp(Alliance alliance) {
         super(alliance);
     }
@@ -50,25 +47,19 @@ public abstract class TeleOp extends OpModeCommand {
                 new RunCommand(() -> turretSubsystem.setTurretPower(gamepad2.left_stick_x))
         );
 
-
         new HookDownCMD(hookSubsystem).schedule();
 
+        spindexSubsystem.setDefaultCommand(new SpindexModeDefaultCMD(spindexSubsystem));
 
-        CommandScheduler.getInstance().setDefaultCommand(spindexSubsystem, new SpindexModeDefaultCMD(
-                spindexSubsystem,
-                new ShootModeCMD(spindexSubsystem), // switch to shoot mode
-                new AutoIntakeModeCMD(spindexSubsystem)
-        ));
+        pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1));
 
-        CommandScheduler.getInstance().setDefaultCommand(pedroSubsystem, pedroSubsystem.fieldCentricCmd(gamepad1));
-
-        CommandScheduler.getInstance().setDefaultCommand(liftSubsystem, new LiftHoldCMD(liftSubsystem));
+        liftSubsystem.setDefaultCommand(new LiftHoldCMD(liftSubsystem));
 
 
         Garra.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem, llSubsystem));
 
 
-        CommandScheduler.getInstance().setDefaultCommand(intakeSubsystem, new IntakeHoldCMD(intakeSubsystem));
+        intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
 
         Button IntakeIn = new GamepadButton(
                 Garra, GamepadKeys.Button.A

@@ -19,10 +19,11 @@ public class TurretSubsystem extends SubsystemBase {
     CRServo Torreta2;
 
     public static double limit = 1300;
-    public static PIDFCoefficients encPidfCoeffs = new PIDFCoefficients(0.007, 0, 0.0003, 0);
+    public static PIDFCoefficients encPidfCoeffs = new PIDFCoefficients(0.002, 0, 0.0001, 0.0008);
     public static PIDFCoefficients llPidfCoeffs = new PIDFCoefficients(0.022,0,0.00055,0);
 
     public static double Minimum = 0.037;
+    public static double MinimumEnc = 0.04;
 
     AnalogInput encoder;
     static Double lastPos = null;

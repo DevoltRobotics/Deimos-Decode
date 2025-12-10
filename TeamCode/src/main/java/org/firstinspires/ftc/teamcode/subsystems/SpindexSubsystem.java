@@ -19,15 +19,15 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 public class SpindexSubsystem extends SubsystemBase {
 
     public static double IntakePos = 0.02;
-    public static double ShootPos = 0.51;
+    public static double ShootPos = 0.5;
 
-    public static double IntakePos2 = 0.26;
+    public static double IntakePos2 = 0.245;
 
-    public static double ShootPos2 = 0.74;
+    public static double ShootPos2 = 0.73;
 
-    public static double IntakePos3 = 0.49;
+    public static double IntakePos3 = 0.475;
 
-    public static double ShootPos3 = 0.98;
+    public static double ShootPos3 = 0.965;
 
 
     public static double SpindexDelayFactorSeconds = 0.6;

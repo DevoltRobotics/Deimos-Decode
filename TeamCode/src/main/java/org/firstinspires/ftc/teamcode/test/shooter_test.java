@@ -42,7 +42,7 @@ public class shooter_test extends OpModeCommand {
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.Y).toggleWhenPressed(
                 new TurretAutoLLCMD(turretSubsystem, llSubsystem),
-                new TurretToPosCMD(turretSubsystem, 300)
+                new TurretToPosCMD(turretSubsystem, 250.0)
         );
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.X).whenActive(new InstantCommand(() -> {
@@ -50,7 +50,9 @@ public class shooter_test extends OpModeCommand {
         }));
 
         new RunCommand(() -> {
-            if(Math.abs(gamepad1.left_stick_x) > 0.2 && turretSubsystem.getCurrentCommand() != turretSubsystem.getDefaultCommand()) {
+            if(Math.abs(gamepad1.left_stick_x) > 0.2
+                    && turretSubsystem.getCurrentCommand() != turretSubsystem.getDefaultCommand()
+            ) {
                 turretSubsystem.getCurrentCommand().cancel();
             }
         }).schedule();

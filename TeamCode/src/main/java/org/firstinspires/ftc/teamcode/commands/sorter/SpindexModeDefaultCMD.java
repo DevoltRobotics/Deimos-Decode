@@ -12,10 +12,10 @@ public class SpindexModeDefaultCMD extends CommandBase {
 
     private Command current = null;
 
-    public SpindexModeDefaultCMD(SpindexSubsystem spindex, Command shootCmd, Command autoCmd) {
+    public SpindexModeDefaultCMD(SpindexSubsystem spindex) {
         this.spindex = spindex;
-        this.shootCmd = shootCmd;
-        this.autoCmd = autoCmd;
+        this.shootCmd = new ShootModeCMD(spindex);
+        this.autoCmd = new AutoIntakeModeCMD(spindex);
         addRequirements(spindex);
     }
 

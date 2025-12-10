@@ -44,11 +44,6 @@ public abstract class OpModeCommand extends OpMode {
         this.alliance = alliance;
     }
 
-    //reinicia la lista de comandos
-    public void reset() {
-        CommandScheduler.getInstance().reset();
-    }
-
     //corre el scheduler
     public void run() {
     }
@@ -58,17 +53,13 @@ public abstract class OpModeCommand extends OpMode {
         CommandScheduler.getInstance().schedule(commands);
     }
 
-    //registra subsistemas al scheduler
-    public void register(Subsystem... subsystems) {
-        CommandScheduler.getInstance().registerSubsystem(subsystems);
-    }
-
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
+
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        register(
+        CommandScheduler.getInstance().registerSubsystem(
                 hookSubsystem = new HookSubsystem(hardwareMap),
                 intakeSubsystem = new IntakeSubsystem(hardwareMap),
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
@@ -107,10 +98,6 @@ public abstract class OpModeCommand extends OpMode {
         }
 
         logEntries.removeIf((entry) -> entry.timer.milliseconds() >= entry.durationMillis);
-    }
-
-    public void stop() {
-        reset();
     }
 
     public abstract void initialize();

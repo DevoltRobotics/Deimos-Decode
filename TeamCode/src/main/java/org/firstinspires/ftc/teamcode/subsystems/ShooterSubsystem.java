@@ -41,7 +41,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public void periodic(){
         shooterPIDF.setCoefficients(SCoeffs);
 
-        double CurrentVelocity = -(shooter2.getVelocity());
+        double CurrentVelocity = getCurrentVelocity();
 
         shooterPIDF.setSetPoint(TargetVelocity);
         double power = (kV *TargetVelocity)+shooterPIDF.calculate(CurrentVelocity);
@@ -51,6 +51,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
         FtcDashboard.getInstance().getTelemetry().addData("shooter target",TargetVelocity);
         FtcDashboard.getInstance().getTelemetry().addData("shooter current",CurrentVelocity);
+    }
+
+    public double getCurrentVelocity() {
+        return -(shooter2.getVelocity());
     }
 
     public void setTargetVelocity(double target){

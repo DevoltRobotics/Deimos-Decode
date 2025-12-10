@@ -15,9 +15,9 @@ public class TurretToPosCMD extends CommandBase {
 
     TurretSubsystem subsystem;
 
-    double targetPos;
+    Double targetPos;
 
-    public TurretToPosCMD(TurretSubsystem subsystem, double targetPos) {
+    public TurretToPosCMD(TurretSubsystem subsystem, Double targetPos) {
         this.subsystem = subsystem;
 
         pidf = new PIDFController(TurretSubsystem.encPidfCoeffs);
@@ -28,9 +28,14 @@ public class TurretToPosCMD extends CommandBase {
 
     @Override
     public void execute() {
+        if(targetPos == null) {
+            cancel();
+            return;
+        }
+
         pidf.setCoefficients(TurretSubsystem.encPidfCoeffs);
-        pidf.setTolerance(1);
-        pidf.setMinimumOutput(TurretSubsystem.Minimum);
+        pidf.setTolerance(5);
+        pidf.setMinimumOutput(TurretSubsystem.MinimumEnc);
 
         subsystem.setTurretPower(-pidf.calculate(subsystem.getCurrentPosition(), targetPos));
 
@@ -38,7 +43,12 @@ public class TurretToPosCMD extends CommandBase {
     }
 
     @Override
+    public void end(boolean interrupted) {
+        subsystem.setTurretPower(0);
+    }
+
+    @Override
     public boolean isFinished() {
-        return pidf.atSetPoint();
+        return Math.abs(pidf.getPositionError()) <= 5;
     }
 }
