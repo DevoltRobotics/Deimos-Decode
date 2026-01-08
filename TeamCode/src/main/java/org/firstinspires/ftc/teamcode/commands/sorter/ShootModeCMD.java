@@ -15,7 +15,7 @@ public class ShootModeCMD extends CommandBase {
     @Override
     public void initialize() {
         if(spindex.getFirstInitSho()) {
-            spindex.setTargetPos(SpindexSubsystem.ShootPos);
+            spindex.setTargetPos(spindex.getPatternOffsetShootcMode());
             spindex.setFirstInitsho(false);
             spindex.setFirstInitIn(true);
         }

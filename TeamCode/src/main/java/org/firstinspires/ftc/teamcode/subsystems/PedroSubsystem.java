@@ -19,6 +19,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
 
 public class PedroSubsystem extends SubsystemBase {
 
@@ -31,6 +32,8 @@ public class PedroSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         follower.update();
+        Tuning.follower = follower;
+        Tuning.draw();
     }
 
     public Command followPathCmd(Path path) {

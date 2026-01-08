@@ -47,6 +47,8 @@ public class ShooterAutoLLCMD extends CommandBase {
 
                 subsystem.setTargetVelocity(Range.clip(velocity, 1175,1540));
             }
+        } else{
+            subsystem.setTargetVelocity(0);
         }
     }
 }

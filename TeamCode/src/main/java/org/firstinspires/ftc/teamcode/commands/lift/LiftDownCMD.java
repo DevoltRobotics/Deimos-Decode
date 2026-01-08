@@ -18,7 +18,6 @@ public class LiftDownCMD extends CommandBase {
 
     @Override
     public void initialize(){
-        liftSubsystem.down();
     }
 
     @Override

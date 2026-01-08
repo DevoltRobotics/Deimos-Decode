@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
-import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
@@ -20,11 +20,12 @@ import org.firstinspires.ftc.teamcode.commands.intake.LiftDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.LiftHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.LiftUpCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
-import org.firstinspires.ftc.teamcode.commands.sorter.AutoIntakeModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.IntakeModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.LastPosSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.SpindexModeDefaultCMD;
+import org.firstinspires.ftc.teamcode.commands.transfer.StopTransferCMD;
+import org.firstinspires.ftc.teamcode.commands.transfer.TransferCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 
@@ -37,17 +38,20 @@ public abstract class TeleOp extends OpModeCommand {
         super(alliance);
     }
 
+
     @Override
     public void initialize() {
         Chasis = new GamepadEx(gamepad1);
         Garra = new GamepadEx(gamepad2);
 
         Garra.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(
-                new TurretAutoLLCMD(turretSubsystem, llSubsystem),
-                new RunCommand(() -> turretSubsystem.setTurretPower(gamepad2.left_stick_x))
-        );
+               new TransferCMD(transferSubsystem),new StopTransferCMD(transferSubsystem)
+       );
 
         new HookDownCMD(hookSubsystem).schedule();
+
+        shooterSubsystem.setDefaultCommand(new ShooterAutoLLCMD(shooterSubsystem,llSubsystem));
+        turretSubsystem.setDefaultCommand(new TurretAutoLLCMD(turretSubsystem,llSubsystem));
 
         spindexSubsystem.setDefaultCommand(new SpindexModeDefaultCMD(spindexSubsystem));
 
@@ -91,13 +95,7 @@ public abstract class TeleOp extends OpModeCommand {
 
         lastB.whenPressed(new LastPosSorterCMD(spindexSubsystem));
 
-        Button shootmode = new GamepadButton(
-                Garra, GamepadKeys.Button.DPAD_UP
-        );
 
-        shootmode.whenPressed(
-                new ShootModeCMD(spindexSubsystem)
-        );
 
 
         Button nextB = new GamepadButton(
@@ -119,13 +117,16 @@ public abstract class TeleOp extends OpModeCommand {
         );
 
         AutoShoot.whenPressed(
-                new Shoot3BallsCMD(hookSubsystem, spindexSubsystem)
+                new Shoot3BallsCMD(hookSubsystem, spindexSubsystem,()->spindexSubsystem.getPatternOffset())
         );
 
 
         Trigger hookUpAndDown = new Trigger(() -> gamepad2.right_trigger >= 0.1);
 
         hookUpAndDown.whenActive(new UpAndDownCMD(hookSubsystem, spindexSubsystem));
+
+
+
 
         Trigger hookDown = new Trigger(() -> gamepad2.left_trigger >= 0.1);
 

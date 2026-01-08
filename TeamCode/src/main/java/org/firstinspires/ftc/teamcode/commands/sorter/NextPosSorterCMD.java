@@ -10,7 +10,6 @@ public class NextPosSorterCMD extends CommandBase {
 
     double error;
     ElapsedTime timer = new ElapsedTime();
-
     public NextPosSorterCMD(SpindexSubsystem spindex) {
         this.spindex = spindex;
         addRequirements(spindex);
@@ -18,17 +17,14 @@ public class NextPosSorterCMD extends CommandBase {
 
     @Override
     public void initialize() {
-        error = Math.abs(
-                spindex.advanceOneIndex()
-        );
-
-        timer.reset();
+        spindex.advanceOneIndex();
     }
 
     @Override
     public boolean isFinished() {
-        return timer.seconds() > (error * SpindexSubsystem.SpindexDelayFactorSeconds);
+        return Math.abs(spindex.SpinPID.getPositionError()) <= 5;
     }
+
 
 
 }

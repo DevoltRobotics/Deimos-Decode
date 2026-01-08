@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.command.Subsystem;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.commands.transfer.TransferCMD;
 import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LLSubsystem;
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.subsystems.LiftSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.TransferSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 import java.util.ArrayList;
@@ -37,6 +39,8 @@ public abstract class OpModeCommand extends OpMode {
     private Alliance alliance;
 
     public LiftSubsystem liftSubsystem;
+
+    public TransferSubsystem transferSubsystem;
 
     private ArrayList<CommandLogEntry> logEntries = new ArrayList<>();
 
@@ -60,14 +64,16 @@ public abstract class OpModeCommand extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         CommandScheduler.getInstance().registerSubsystem(
+                pedroSubsystem = new PedroSubsystem(hardwareMap),
                 hookSubsystem = new HookSubsystem(hardwareMap),
                 intakeSubsystem = new IntakeSubsystem(hardwareMap),
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
-                turretSubsystem = new TurretSubsystem(hardwareMap),
+                turretSubsystem = new TurretSubsystem(hardwareMap,pedroSubsystem, alliance),
                 spindexSubsystem = new SpindexSubsystem(hardwareMap),
                 llSubsystem = new LLSubsystem(hardwareMap, alliance),
-                pedroSubsystem = new PedroSubsystem(hardwareMap),
-                liftSubsystem = new LiftSubsystem(hardwareMap)
+                liftSubsystem = new LiftSubsystem(hardwareMap),
+                transferSubsystem = new TransferSubsystem(hardwareMap)
+
         );
 
         CommandScheduler.getInstance().setBulkReading(hardwareMap, LynxModule.BulkCachingMode.MANUAL);
@@ -94,7 +100,7 @@ public abstract class OpModeCommand extends OpMode {
         run();
 
         for (CommandLogEntry entry : logEntries) {
-            telemetry.addData("#" + entry.id + "[" + entry.telemetryCaption + "]", entry.telemetryMessage);
+            // telemetry.addData("#" + entry.id + "[" + entry.telemetryCaption + "]", entry.telemetryMessage);
         }
 
         logEntries.removeIf((entry) -> entry.timer.milliseconds() >= entry.durationMillis);
@@ -138,6 +144,11 @@ public abstract class OpModeCommand extends OpMode {
             this.telemetryCaption = telemetryCaption;
             this.telemetryMessage = telemetryMessage;
         }
+    }
+
+    @Override
+    public void stop(){
+
     }
 
 }

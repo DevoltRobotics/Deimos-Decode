@@ -17,8 +17,7 @@ public class LLSubsystem extends SubsystemBase {
 
     public final Alliance alliance;
 
-
-
+    private int lastPipeline = 0;
     private int currentPipeline = 0;
 
     public LLSubsystem(HardwareMap hMap, Alliance alliance){
@@ -31,12 +30,15 @@ public class LLSubsystem extends SubsystemBase {
 
     @Override
     public void periodic(){
-        limelight.pipelineSwitch(currentPipeline);
+        if(lastPipeline != currentPipeline) {
+            limelight.pipelineSwitch(currentPipeline);
+        }
+        lastPipeline = currentPipeline;
 
         result = limelight.getLatestResult();
 
         if (result != null && result.isValid()) {
-            if(currentPipeline == 0) {
+            if(currentPipeline == 0 || currentPipeline == 2) {
                 FtcDashboard.getInstance().getTelemetry().addData("Limelight Alliance tA", getAllianceTA());
                 FtcDashboard.getInstance().getTelemetry().addData("Limelight Alliance tX", getAllianceTX());
             } else if(currentPipeline == 1) {
@@ -106,7 +108,15 @@ public class LLSubsystem extends SubsystemBase {
     }
 
     public void setAimingPipeline() {
-        currentPipeline = 0;
+        switch (alliance) {
+            case ANY:
+            case RED:
+                currentPipeline = 0;
+                break;
+            case BLUE:
+                currentPipeline = 2; // fokin sol de torreon
+                break;
+        }
     }
 
 }

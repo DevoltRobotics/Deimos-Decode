@@ -39,5 +39,7 @@ public class SpindexModeDefaultCMD extends CommandBase {
         if (current != null) current.end(interrupted);
     }
 
-    @Override public boolean isFinished() { return false; }
+    @Override public boolean isFinished() {
+        return false;
+    }
 }

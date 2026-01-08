@@ -16,6 +16,8 @@ public class AutoIntakeModeCMD extends CommandBase {
     private Double lastTriggerPosRad = null;
     private final ElapsedTime timer = new ElapsedTime();
 
+
+
     public AutoIntakeModeCMD(SpindexSubsystem spindex) {
         this.spindex = spindex;
         addRequirements(spindex);
@@ -23,14 +25,14 @@ public class AutoIntakeModeCMD extends CommandBase {
 
     @Override
     public void initialize() {
-        // Opcional: resetear estado
+        spindex.detectedColor = SpindexSubsystem.DetectedColor.Unknown;
         objectLatched = false;
         lastTriggerTimeMs = -9999;
         lastTriggerPosRad = spindex.getTargetPos();
         timer.reset();
 
         if(spindex.getFirstInitIn()) {
-            spindex.setTargetPos(spindex.IntakePos);
+            spindex.setTargetPos(SpindexSubsystem.IntakePos);
             spindex.setFirstInitIn(false);
             spindex.setFirstInitsho(true);
         }
@@ -48,6 +50,10 @@ public class AutoIntakeModeCMD extends CommandBase {
 
         //bola detectada
         if (Bpresence && !objectLatched && !spindex.getShootmode()) {
+             spindex.detectedColor = spindex.getDetectedColor();
+             if (spindex.detectedColor == SpindexSubsystem.DetectedColor.Green){
+                 spindex.GrenBallPos = (spindex.getTargetPos() + 180);
+             }
             spindex.advanceOneIndex();
             spindex.addnBalls();
 

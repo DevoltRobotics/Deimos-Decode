@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.commands.compound;
 
 
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
@@ -22,20 +23,23 @@ public class Shoot3BallsCMD extends SequentialCommandGroup {
         }
 
         addCommands(
+                new InstantCommand(()-> spindexSubsystem.setShooting(true)),
                 new WaitCommand(400),
 
                 new UpAndDownCMD(hookSubsystem,spindexSubsystem),
                 new NextPosSorterCMD(spindexSubsystem),
 
-                new WaitCommand(200),
+                new WaitCommand(300),
 
                 new UpAndDownCMD(hookSubsystem,spindexSubsystem),
                 new NextPosSorterCMD(spindexSubsystem),
 
-                new WaitCommand(200),
+                new WaitCommand(300),
 
-                new UpAndDownCMD(hookSubsystem,spindexSubsystem)
+                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
+                new InstantCommand(()->spindexSubsystem.setShooting(false))
         );
+
     }
 
     public Shoot3BallsCMD(HookSubsystem hookSubsystem, SpindexSubsystem spindexSubsystem) {

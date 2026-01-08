@@ -30,6 +30,8 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter = hMap.get(DcMotorEx.class,"shooter");
         shooter2 = hMap.get(DcMotorEx.class,"shooter2");
 
+        shooter.setDirection(DcMotorSimple.Direction.REVERSE);
+
         shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooter2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 

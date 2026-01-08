@@ -18,7 +18,6 @@ public class LiftUpCMD extends CommandBase {
 
     @Override
     public void initialize(){
-        liftSubsystem.up();
     }
 
     @Override

@@ -69,4 +69,8 @@ public class TurretAutoLLCMD extends CommandBase {
             subsystem.setTurretPower(0);
         }
     }
+    @Override
+    public void end(boolean interrupted) {
+        subsystem.setTurretPower(0);
+    }
 }

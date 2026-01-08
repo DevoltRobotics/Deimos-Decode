@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.commands.sorter;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
 public class LastPosSorterCMD extends CommandBase {
-
     private final SpindexSubsystem spindex;
+
+
 
     public LastPosSorterCMD(SpindexSubsystem spindex) {
         this.spindex = spindex;
@@ -17,11 +19,9 @@ public class LastPosSorterCMD extends CommandBase {
         spindex.returnOneIndex();
     }
 
-
-
     @Override
     public boolean isFinished() {
-        return true;
+        return Math.abs(spindex.SpinPID.getPositionError()) <= 5;
     }
 
 
