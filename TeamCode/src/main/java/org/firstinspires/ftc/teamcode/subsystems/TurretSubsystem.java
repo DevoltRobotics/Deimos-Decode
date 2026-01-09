@@ -37,6 +37,8 @@ public class TurretSubsystem extends SubsystemBase {
     double robotToGoalAngle;
     double turretToGoalAngle;
 
+     public double distanceToGoal = 0;
+
     Alliance alliance;
 
     public void setGoalPos(double x, double y) {
@@ -51,11 +53,11 @@ public class TurretSubsystem extends SubsystemBase {
         this.pedroSubsystem = pedroSubsystem;
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
-            setGoalPos(140.69, 139.15);
+            setGoalPos(143, 143);
         } else if (alliance == Alliance.BLUE) {
-            setGoalPos(3.52, 139.15);
+            setGoalPos(0, 143);
         } else {
-            setGoalPos(140.69, 139.15);
+            setGoalPos(143, 143);
         }
     }
 
@@ -76,7 +78,10 @@ public class TurretSubsystem extends SubsystemBase {
         double dx = goalX - robotPos.getX();
         double dy = goalY - robotPos.getY();
 
-        robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));
+
+        robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));//direction
+        distanceToGoal = Math.hypot(dx,dy);//magnitude
+
         turretToGoalAngle = AngleUnit.normalizeDegrees(Math.toDegrees(robotPos.getHeading()) - robotToGoalAngle);
 
         double encoderDegrees = (encoder.getCurrentPosition() * 360) / 8192.0; //8192 ticks per rev
@@ -86,6 +91,8 @@ public class TurretSubsystem extends SubsystemBase {
         FtcDashboard.getInstance().getTelemetry().addData("turret power", Torreta.getPower());
         FtcDashboard.getInstance().getTelemetry().addData("turret angle", currentRelativePos);
         FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
+        FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal() );
+
     }
 
     public double getRobotToGoalAngle() {
@@ -94,6 +101,10 @@ public class TurretSubsystem extends SubsystemBase {
 
     public double getTurretToGoalAngle() {
         return turretToGoalAngle;
+    }
+
+    public double getDistanceToGoal(){
+        return distanceToGoal;
     }
 
 

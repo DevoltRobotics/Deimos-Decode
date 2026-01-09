@@ -10,7 +10,9 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
 import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
@@ -18,6 +20,7 @@ import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
+import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 
 
 @Config
@@ -40,10 +43,13 @@ public class shooter_test extends OpModeCommand {
         gamepadEx1 = new GamepadEx(gamepad1);
 
         pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1));
+        pedroSubsystem.follower.setPose(PedroSubsystem.robotPose);
+        intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.Y).toggleWhenPressed(
                 new TurretToPosCMD(turretSubsystem,0d, true),
                 new TurretAutoOdoCMD(turretSubsystem)
+
         );
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.X).whenActive(new InstantCommand(() -> {
@@ -51,7 +57,7 @@ public class shooter_test extends OpModeCommand {
         }));
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new ShooterShootCmd(shooterSubsystem, () -> TV));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem,llSubsystem));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new ShooterAutoOdoCMD(shooterSubsystem,turretSubsystem));
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenActive(new UpAndDownCMD(hookSubsystem,spindexSubsystem));
         gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenActive(new NextPosSorterCMD(spindexSubsystem));

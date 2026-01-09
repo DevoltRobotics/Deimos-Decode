@@ -10,7 +10,7 @@ public class TurretAutoOdoCMD extends TurretToPosCMD {
 
     @Override
     public void execute() {
-        targetPos = subsystem.getTurretToGoalAngle();
+        targetPos = (subsystem.getTurretToGoalAngle())+3.5;
         super.execute();
     }
 }

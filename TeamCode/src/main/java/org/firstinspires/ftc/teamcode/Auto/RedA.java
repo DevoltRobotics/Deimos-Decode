@@ -30,6 +30,7 @@ import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretPowerCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
+import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
 @Autonomous(name = "RedA", group = "##", preselectTeleOp = "TeleOpRed")
@@ -240,6 +241,7 @@ public class RedA extends OpModeCommand {
     public void run() {
         // Telemetría para debug
         Pose pose = pedroSubsystem.follower.getPose();
+        PedroSubsystem.robotPose = pedroSubsystem.follower.getPose();
 
         telemetry.addData("patron",spindexSubsystem.obeliskPattern);
         telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());

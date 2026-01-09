@@ -9,6 +9,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
 import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
@@ -27,7 +28,9 @@ import org.firstinspires.ftc.teamcode.commands.sorter.SpindexModeDefaultCMD;
 import org.firstinspires.ftc.teamcode.commands.transfer.StopTransferCMD;
 import org.firstinspires.ftc.teamcode.commands.transfer.TransferCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
+import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
+import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 
 public abstract class TeleOp extends OpModeCommand {
 
@@ -41,6 +44,7 @@ public abstract class TeleOp extends OpModeCommand {
 
     @Override
     public void initialize() {
+        pedroSubsystem.follower.setPose(PedroSubsystem.robotPose);
         Chasis = new GamepadEx(gamepad1);
         Garra = new GamepadEx(gamepad2);
 
@@ -50,8 +54,8 @@ public abstract class TeleOp extends OpModeCommand {
 
         new HookDownCMD(hookSubsystem).schedule();
 
-        shooterSubsystem.setDefaultCommand(new ShooterAutoLLCMD(shooterSubsystem,llSubsystem));
-        turretSubsystem.setDefaultCommand(new TurretAutoLLCMD(turretSubsystem,llSubsystem));
+        shooterSubsystem.setDefaultCommand(new ShooterAutoOdoCMD(shooterSubsystem,turretSubsystem));
+        turretSubsystem.setDefaultCommand(new TurretAutoOdoCMD(turretSubsystem));
 
         spindexSubsystem.setDefaultCommand(new SpindexModeDefaultCMD(spindexSubsystem));
 
@@ -132,6 +136,12 @@ public abstract class TeleOp extends OpModeCommand {
 
         hookDown.whenActive(new HookDownCMD(hookSubsystem));
 
+
+    }
+
+    @Override
+    public void run(){
+        PedroSubsystem.robotPose = pedroSubsystem.follower.getPose();
 
     }
 }

@@ -25,6 +25,8 @@ public class PedroSubsystem extends SubsystemBase {
 
     public final Follower follower;
 
+    public static Pose robotPose;
+
     public PedroSubsystem(HardwareMap hardwareMap) {
         this.follower = Constants.createFollower(hardwareMap);
     }
