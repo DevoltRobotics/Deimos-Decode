@@ -18,6 +18,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
 
@@ -25,7 +26,7 @@ public class PedroSubsystem extends SubsystemBase {
 
     public final Follower follower;
 
-    public static Pose robotPose;
+    public static Pose robotPose = new Pose(0,0,0);
 
     public PedroSubsystem(HardwareMap hardwareMap) {
         this.follower = Constants.createFollower(hardwareMap);
@@ -47,17 +48,19 @@ public class PedroSubsystem extends SubsystemBase {
     }
 
 
-    public Command fieldCentricCmd(Gamepad gamepad) {
-        return new FieldCentricCmd(gamepad);
+    public Command fieldCentricCmd(Gamepad gamepad,Alliance alliance) {
+        return new FieldCentricCmd(gamepad, alliance);
     }
 
 
     class FieldCentricCmd extends CommandBase {
         Gamepad gamepad;
+        Alliance alliance;
 
-        FieldCentricCmd(Gamepad gamepad) {
+        FieldCentricCmd(Gamepad gamepad, Alliance alliance) {
             this.gamepad = gamepad;
             addRequirements(PedroSubsystem.this);
+            this.alliance = alliance;
         }
 
         @Override
@@ -68,8 +71,14 @@ public class PedroSubsystem extends SubsystemBase {
         @Override
         public void execute() {
             follower.setTeleOpDrive(-gamepad.left_stick_y, -gamepad.left_stick_x,-gamepad.right_stick_x, false);
+
             if (gamepad.dpad_up){
-                follower.setPose(new Pose(0,0,0));
+                if (alliance == Alliance.RED){
+                follower.setPose(new Pose(8.25,7.65,Math.toRadians(90)));} else if (alliance == Alliance.BLUE) {
+                    follower.setPose(new Pose(136,7.65,Math.toRadians(90)));
+                }else{
+                    follower.setPose(new Pose(8.25,7.65,Math.toRadians(90)));
+                }
             }
         }
 

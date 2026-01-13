@@ -59,12 +59,9 @@ public abstract class TeleOp extends OpModeCommand {
 
         spindexSubsystem.setDefaultCommand(new SpindexModeDefaultCMD(spindexSubsystem));
 
-        pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1));
+        pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1, alliance));
 
         liftSubsystem.setDefaultCommand(new LiftHoldCMD(liftSubsystem));
-
-
-        Garra.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(new ShooterAutoLLCMD(shooterSubsystem, llSubsystem));
 
 
         intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));

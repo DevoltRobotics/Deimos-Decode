@@ -16,11 +16,12 @@ public class ShooterAutoOdoCMD extends CommandBase {
     static {
         VelocityLUT.add(0, 0);
 
-        VelocityLUT.add(39.5, 1175);
-        VelocityLUT.add(70, 1200);
-        VelocityLUT.add(99.5, 1280);
-        VelocityLUT.add(149.1, 1490); // new
-        VelocityLUT.add(157, 1560);
+        VelocityLUT.add(56, 1100);
+        VelocityLUT.add(75, 1115);
+        VelocityLUT.add(101, 1210);
+        VelocityLUT.add(134, 1380);
+        VelocityLUT.add(168, 1560); // new
+        VelocityLUT.add(211, 1640);
 
         VelocityLUT.add(1000000000, 10000);
 
@@ -47,7 +48,7 @@ public class ShooterAutoOdoCMD extends CommandBase {
 
         double velocity = VelocityLUT.get(distance);
 
-        subsystem.setTargetVelocity(Range.clip(velocity, 1175,1540));
+        subsystem.setTargetVelocity(Range.clip(velocity, 1100,1570));
 
 
     }

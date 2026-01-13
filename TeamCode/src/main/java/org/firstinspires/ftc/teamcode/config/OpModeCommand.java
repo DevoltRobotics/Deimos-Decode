@@ -36,7 +36,7 @@ public abstract class OpModeCommand extends OpMode {
 
     public PedroSubsystem pedroSubsystem;
 
-    private Alliance alliance;
+    public final Alliance alliance;
 
     public LiftSubsystem liftSubsystem;
 

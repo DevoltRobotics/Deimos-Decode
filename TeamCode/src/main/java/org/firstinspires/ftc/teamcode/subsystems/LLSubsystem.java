@@ -77,7 +77,7 @@ public class LLSubsystem extends SubsystemBase {
             if (alliance == Alliance.ANY ||
                     (alliance == Alliance.RED && id == 24) ||
                     (alliance == Alliance.BLUE && id == 20)) {
-                return result.getTx();
+                return result.getTy();
             }
         }
 

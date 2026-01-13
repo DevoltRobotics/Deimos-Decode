@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
 import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
+import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoFuseCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
@@ -42,14 +43,17 @@ public class shooter_test extends OpModeCommand {
 
         gamepadEx1 = new GamepadEx(gamepad1);
 
-        pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1));
+        pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1,alliance));
         pedroSubsystem.follower.setPose(PedroSubsystem.robotPose);
         intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.Y).toggleWhenPressed(
-                new TurretToPosCMD(turretSubsystem,0d, true),
                 new TurretAutoOdoCMD(turretSubsystem)
 
+        );
+
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.OPTIONS).whenPressed(
+                new TurretAutoFuseCMD(turretSubsystem,llSubsystem)
         );
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.X).whenActive(new InstantCommand(() -> {

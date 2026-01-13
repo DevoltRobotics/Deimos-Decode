@@ -136,17 +136,14 @@ public class SpindexSubsystem extends SubsystemBase {
 
         spindexPosDeg = (Spindex.getCurrentPosition()/ticks_per_rev) * 360;
 
+
+        power = Math.min(SpinPID.calculate(spindexPosDeg), 0.5);
+
         if (Math.abs(targetPos - Spindex.getCurrentPosition()) < 2){
             Spindex.setPower(0);
-
         }else {
             Spindex.setPower(power);
-
         }
-
-        power = SpinPID.calculate(spindexPosDeg);
-
-
 
        /* normRed = colors.red/colors.alpha;
         normBlue = colors.blue/colors.alpha;
@@ -173,11 +170,6 @@ public class SpindexSubsystem extends SubsystemBase {
         FtcDashboard.getInstance().getTelemetry().addData("green", normGreen);
         FtcDashboard.getInstance().getTelemetry().addData("detected color", detectedColor);
         FtcDashboard.getInstance().getTelemetry().addData("Patron", obeliskPattern);
-
-
-
-
-
     }
 
 
