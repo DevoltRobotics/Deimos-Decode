@@ -28,8 +28,11 @@ public class PedroSubsystem extends SubsystemBase {
 
     public static Pose robotPose = new Pose(0,0,0);
 
-    public PedroSubsystem(HardwareMap hardwareMap) {
+    private Alliance alliance;
+
+    public PedroSubsystem(HardwareMap hardwareMap, Alliance alliance) {
         this.follower = Constants.createFollower(hardwareMap);
+        this.alliance = alliance;
     }
 
     @Override
@@ -70,7 +73,18 @@ public class PedroSubsystem extends SubsystemBase {
 
         @Override
         public void execute() {
-            follower.setTeleOpDrive(-gamepad.left_stick_y, -gamepad.left_stick_x,-gamepad.right_stick_x, false);
+
+
+            if (alliance == Alliance.RED){
+            follower.setTeleOpDrive(-gamepad.left_stick_y, -gamepad.left_stick_x,-gamepad.right_stick_x, false);}
+            else if (alliance == Alliance.BLUE) {
+                follower.setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x,-gamepad.right_stick_x, false);}
+            else {
+                follower.setTeleOpDrive(-gamepad.left_stick_y, -gamepad.left_stick_x,-gamepad.right_stick_x, false);
+            }
+
+
+
 
             if (gamepad.dpad_up){
                 if (alliance == Alliance.RED){

@@ -29,17 +29,18 @@ import org.firstinspires.ftc.teamcode.commands.turret.TurretPowerCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
-@Autonomous(name = "Blue-Lejos", group = "##", preselectTeleOp = "TeleOpBlue")
-public class BlueA extends OpModeCommand {
+@Autonomous(name = "Red_Lejos", group = "##", preselectTeleOp = "TeleOpRed")
+public class RedA_Lejos extends OpModeCommand {
 
     private Command autoCommand;
 
 
 
-    public BlueA() {
-        super(Alliance.BLUE);
+    public RedA_Lejos() {
+        super(Alliance.RED);
     }
 
     @Override
@@ -48,12 +49,12 @@ public class BlueA extends OpModeCommand {
         spindexSubsystem.SARSP();
         turretSubsystem.resetEncoder();
         spindexSubsystem.setnBalls(3);
-        Pose startPose = new Pose(62.972477064220186, 8.807339449541292, Math.toRadians(90));
+        Pose startPose = new Pose(80.58715596330276, 8.807339449541292, Math.toRadians(90));
         pedroSubsystem.follower.setStartingPose(startPose);
 
         llSubsystem.setObeliskPipeline();
 
-            Pose targetPose = new Pose(32, 11.5, Math.toRadians(90));
+        Pose targetPose = new Pose(111.92660550458716, 9.137614678899077, Math.toRadians(90));
 
         // Path que SÍ tiene distancia: de startPose -> targetPose
         PathChain path1 = pedroSubsystem.follower
@@ -68,22 +69,25 @@ public class BlueA extends OpModeCommand {
                         startPose.getHeading()
                 )
                 .build();
-        shooterSubsystem.setDefaultCommand(new ShooterShootCmd(shooterSubsystem, 1465));
+        shooterSubsystem.setDefaultCommand(new ShooterShootCmd(shooterSubsystem, 1450));
         intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
 
+
         // Script del auton: seguir path1 y luego hacer tus comandos
-        autoCommand = new SequentialCommandGroup(
+        autoCommand =
+
+                new SequentialCommandGroup(
                 new HookDownCMD(hookSubsystem),
                 new RunCommand(() ->
                         // eval obelisk here to store for the rest of the auto
                         spindexSubsystem.obeliskPattern = llSubsystem.getObelisk()
                 ).withTimeout(1200),
                 new ShootModeCMD(spindexSubsystem),
-                new TurretToPosCMD(turretSubsystem,40d,false).withTimeout(1200),
-                new TurretToPosCMD(turretSubsystem,-25d,true).withTimeout(4600),
-               new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset())
+                        new TurretToPosCMD(turretSubsystem,-90d,true).withTimeout(1200),
+                        new TurretToPosCMD(turretSubsystem,22.5,false).withTimeout(4600),
+                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset())
                 ,pedroSubsystem.followPathCmd(path1)
-                 );
+        );
     }
 
     public Command obeliskPrepareCmd(PathChain shootPath) {

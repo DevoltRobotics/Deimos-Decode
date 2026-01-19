@@ -19,15 +19,15 @@ public class TurretSubsystem extends SubsystemBase {
     CRServo Torreta;
     CRServo Torreta2;
 
-    public static double lowerLimit = -115;
+    public static double lowerLimit = -110;
     public static double upperLimit = 215;
 
-    public static double LL_OFFSET = 3;
+    public static double LL_OFFSET = 3.6;
 
-    public static PIDFCoefficients encPidfCoeffs = new PIDFCoefficients(0.005, 0, 0.0002, 0.000525);
-    public static PIDFCoefficients llPidfCoeffs = new PIDFCoefficients(0.022, 0, 0.00055, 0);
+    public static PIDFCoefficients encPidfCoeffs = new PIDFCoefficients(0.0065, 0, 0.00029, 0);
+    public static PIDFCoefficients llPidfCoeffs = new PIDFCoefficients(0.004, 0, 0.0001, 0);
 
-    public static double Minimum = 0.037;
+    public static double Minimum = 0.061;
     public static double MinimumEnc = 0.06;
 
     double goalX, goalY;
@@ -69,11 +69,11 @@ public class TurretSubsystem extends SubsystemBase {
         this.pedroSubsystem = pedroSubsystem;
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
-            setGoalPos(155, 143);
+            setGoalPos(130, 130);
         } else if (alliance == Alliance.BLUE) {
-            setGoalPos(0, 143);
+            setGoalPos(13, 130);
         } else {
-            setGoalPos(155, 143);
+            setGoalPos(130, 130);
         }
         fuse = new AngleKalman1D(
                 0.0,     // x0: estimación inicial

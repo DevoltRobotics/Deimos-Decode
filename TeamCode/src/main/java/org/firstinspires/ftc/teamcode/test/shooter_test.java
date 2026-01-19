@@ -48,8 +48,16 @@ public class shooter_test extends OpModeCommand {
         intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.Y).toggleWhenPressed(
-                new TurretAutoOdoCMD(turretSubsystem)
+                new TurretAutoOdoCMD(turretSubsystem),
+                new TurretToPosCMD(turretSubsystem, 0d,false)
+                );
 
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON).whenPressed(
+                new TurretToPosCMD(turretSubsystem, 100d,false)
+        );
+
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
+                new TurretAutoLLCMD(turretSubsystem,llSubsystem)
         );
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.OPTIONS).whenPressed(

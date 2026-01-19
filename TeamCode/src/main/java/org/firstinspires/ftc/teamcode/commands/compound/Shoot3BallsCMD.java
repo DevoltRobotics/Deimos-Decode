@@ -16,28 +16,28 @@ import java.util.function.DoubleSupplier;
 
 public class Shoot3BallsCMD extends SequentialCommandGroup {
     public Shoot3BallsCMD(HookSubsystem hookSubsystem, SpindexSubsystem spindexSubsystem, DoubleSupplier startingSpindex) {
-        if(startingSpindex != null) {
+        if (startingSpindex != null) {
             addCommands(new SpindexPosCMD(spindexSubsystem, startingSpindex));
         } else {
             addCommands(new ShootModeCMD(spindexSubsystem));
         }
 
         addCommands(
-                new InstantCommand(()-> spindexSubsystem.setShooting(true)),
-                new WaitCommand(400),
+                new InstantCommand(() -> spindexSubsystem.setShooting(true)),
+                new WaitCommand(350),
 
-                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
+                new UpAndDownCMD(hookSubsystem, spindexSubsystem),
                 new NextPosSorterCMD(spindexSubsystem),
 
-                new WaitCommand(300),
+                new WaitCommand(200),
 
-                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
+                new UpAndDownCMD(hookSubsystem, spindexSubsystem),
                 new NextPosSorterCMD(spindexSubsystem),
 
-                new WaitCommand(300),
+                new WaitCommand(200),
 
-                new UpAndDownCMD(hookSubsystem,spindexSubsystem),
-                new InstantCommand(()->spindexSubsystem.setShooting(false))
+                new UpAndDownCMD(hookSubsystem, spindexSubsystem),
+                new InstantCommand(() -> spindexSubsystem.setShooting(false))
         );
 
     }

@@ -9,6 +9,7 @@ import com.pedropathing.paths.PathChain;
 
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
@@ -25,6 +26,7 @@ import org.firstinspires.ftc.teamcode.commands.intake.IntakeOutCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
 import org.firstinspires.ftc.teamcode.commands.sorter.AutoIntakeModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
+import org.firstinspires.ftc.teamcode.commands.sorter.SpindexModeDefaultCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.SpindexPosCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretPowerCMD;
@@ -47,8 +49,10 @@ public class RedA extends OpModeCommand {
     public void initialize() {
         spindexSubsystem.setTargetPos(SpindexSubsystem.ShootPos);
         turretSubsystem.resetEncoder();
+
         spindexSubsystem.SARSP();
         spindexSubsystem.setnBalls(3);
+
         Pose startPose = new Pose(123.90184049079755, 119.04294478527608, Math.toRadians(0));
         pedroSubsystem.follower.setStartingPose(startPose);
 
@@ -57,9 +61,9 @@ public class RedA extends OpModeCommand {
 
         Pose ShootPos = new Pose(86.521, 83, Math.toRadians(0));
 
-        Pose Pick1Cycle = new Pose(129, 76, 0);
+        Pose Pick1Cycle = new Pose(129, 78.7, 0);
 
-        Pose P3rdCycle = new Pose(133, 50.5, 0);
+        Pose P3rdCycle = new Pose(133, 57, 0);
 
         //Pose P4thCycle = new Pose(126, 30.7, 0);
 
@@ -134,66 +138,66 @@ public class RedA extends OpModeCommand {
 
         //TODO
         autoCommand = new SequentialCommandGroup(
-                pedroSubsystem.followPathCmd(FShoot),
-
+                new IntakeHoldCMD(intakeSubsystem).withTimeout(10),
                 new HookDownCMD(hookSubsystem),
+                new ShootModeCMD(spindexSubsystem),
+
+                new ParallelDeadlineGroup(
+                        pedroSubsystem.followPathCmd(FShoot),
+                        new TurretToPosCMD(turretSubsystem,-108d,false)
+                        ),
+
                 new RunCommand(() ->
                         // eval obelisk here to store for the rest of the auto
-                        spindexSubsystem.obeliskPattern = llSubsystem.getObelisk()
+                        SpindexSubsystem.obeliskPattern = llSubsystem.getObelisk()
                 ).withTimeout(800),
-                new TurretPowerCMD(turretSubsystem,-1).withTimeout(450),
-                new TurretAutoLLCMD(turretSubsystem,llSubsystem).withTimeout(1500),
-                shootThree(
-                        SpindexSubsystem.ShootPos3, // GPP
-                        SpindexSubsystem.ShootPos2, // PGP
-                        SpindexSubsystem.ShootPos, // PPG
-                        null, 1200
-                ),
 
-                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.35)),
-                new ParallelDeadlineGroup(
+                new TurretToPosCMD(turretSubsystem,-45d,true),
+
+
+
+                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
+
+
+                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.3)),
+
+
+                        new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(GoTo1Cycle),
-                        new AutoIntakeModeCMD(spindexSubsystem),
-                        new IntakeInCMD(intakeSubsystem)
+                                new SpindexModeDefaultCMD(spindexSubsystem).withTimeout(4500),
+                        new IntakeInCMD(intakeSubsystem,spindexSubsystem)
                 ),
                 new WaitCommand(300),
-
 
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(1)),
                 new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(Shoot2Cycle),
-                        new IntakeOutCMD(intakeSubsystem)
-                        ),
-
-                shootThree(
-                        SpindexSubsystem.ShootPos2, // GPP
-                        SpindexSubsystem.ShootPos, // PGP
-                        SpindexSubsystem.ShootPos3,  // PPG
-                        null, 1200
+                        new IntakeHoldCMD(intakeSubsystem)
                 ),
 
-                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.42)),
-                new ParallelDeadlineGroup(
-                        pedroSubsystem.followPathCmd(Pick3rdCycle),
-                        new AutoIntakeModeCMD(spindexSubsystem),
-                        new IntakeInCMD(intakeSubsystem)
-                ),                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(1)),
+                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
+                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.34)),
+
+                        new ParallelDeadlineGroup(
+                        pedroSubsystem.followPathCmd(Pick3rdCycle),
+                        new SpindexModeDefaultCMD(spindexSubsystem),
+                        new InstantCommand(()->spindexSubsystem.setFirstInitIn(true)),
+                        new IntakeInCMD(intakeSubsystem,spindexSubsystem)
+                ),
+
+                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(1)),
+                new ShootModeCMD(spindexSubsystem),
                 new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(Shoot3rdCycle),
-                        new IntakeOutCMD(intakeSubsystem)
-                        ),
-
-                shootThree(
-                        SpindexSubsystem.ShootPos, // GPP
-                        SpindexSubsystem.ShootPos3, // PGP
-                        SpindexSubsystem.ShootPos2, // PPG
-                        null, 1200
+                        new IntakeHoldCMD(intakeSubsystem)
                 ),
+
+                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
                 new ParallelDeadlineGroup(
                         new WaitCommand(700),
                         pedroSubsystem.followPathCmd(Pick4thCycle),
-                        new SpindexPosCMD(spindexSubsystem,0)
+                        new ShootModeCMD(spindexSubsystem)
                 )
         );
     }

@@ -19,11 +19,11 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void In(){
-        intake.setPower(1);
+        intake.setPower(-1);
     }
 
     public void Out(){
-        intake.setPower(-1);
+        intake.setPower(1);
     }
 
     public void Stop(){
@@ -31,6 +31,6 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void Hold(){
-        intake.setPower(0.4);
+        intake.setPower(-0.2);
     }
 }

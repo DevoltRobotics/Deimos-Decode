@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
@@ -27,20 +28,20 @@ import org.firstinspires.ftc.teamcode.Pattern;
 @Config
 public class SpindexSubsystem extends SubsystemBase {
 
-
-
     public static Pattern obeliskPattern = Pattern.PGP;
 
     NormalizedColorSensor colorSensor;
     NormalizedRGBA colors;
 
-    float normRed,normBlue,normGreen;
+    float normRed, normBlue, normGreen;
 
-    public enum DetectedColor{
+    public enum DetectedColor {
         Purple,
         Green,
         Unknown
     }
+
+    private ElapsedTime loopTime = new ElapsedTime();
 
     public DetectedColor detectedColor = DetectedColor.Unknown;
     public double ticks_per_rev = 8192;
@@ -55,10 +56,9 @@ public class SpindexSubsystem extends SubsystemBase {
     public static double ShootPos2 = 120;
 
 
-
     public static double ShootPos3 = 240;
 
-
+    public static double tolerance = 2.5;
 
 
     DigitalChannel laser;
@@ -66,9 +66,10 @@ public class SpindexSubsystem extends SubsystemBase {
 
     DcMotor Spindex;
 
-   public PIDFController SpinPID;
+    public PIDFController SpinPID;
+    public static double kS = 0;
 
-    public static PIDFCoefficients Spincoeffs = new PIDFCoefficients(0.0037,0,0.00027,0);
+    public static PIDFCoefficients Spincoeffs = new PIDFCoefficients(0.012, 0, 0.0006, 0);
 
     public static double TRIGGER_COOLDOWN_MS = 100;             // anti rebote tiempo
     private double targetPos;
@@ -83,11 +84,17 @@ public class SpindexSubsystem extends SubsystemBase {
 
     double distCm = 10;
 
+    static double spindexEncoderOffset = 0;
     double spindexPosDeg = 0;
 
-    public static double minO = 0.08;
+    public static double minO = 0.087;
+
+    double ff;
 
 
+    private double lastError;
+    public boolean shouldPulse = true;
+    private ElapsedTime stuckDetectionTimer = new ElapsedTime();
 
     public SpindexSubsystem(HardwareMap hMap) {
         laser = hMap.get(DigitalChannel.class, "laser");
@@ -104,24 +111,20 @@ public class SpindexSubsystem extends SubsystemBase {
         Spindex.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
-
-
         setTargetPos(IntakePos);
         SpinPID = new PIDFController(Spincoeffs);
-        SpinPID.setTolerance(3);
+        SpinPID.setTolerance(2);
         SpinPID.setMinimumOutput(minO);
     }
 
     @Override
     public void periodic() {
+        ff = Math.signum(SpinPID.getPositionError()) * kS;
 
         distCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
 
         SpinPID.setMinimumOutput(minO);
-
-
         SpinPID.setCoefficients(Spincoeffs);
-
 
         if (nBalls == 3 && !isShooting) {
             Shootmode = true;
@@ -131,21 +134,31 @@ public class SpindexSubsystem extends SubsystemBase {
 
         nBalls = Range.clip(nBalls, 0, 3);
 
-
         SpinPID.setSetPoint(targetPos);
 
-        spindexPosDeg = (Spindex.getCurrentPosition()/ticks_per_rev) * 360;
+        spindexPosDeg = ((Spindex.getCurrentPosition() - spindexEncoderOffset) / ticks_per_rev) * 360;
 
+        power = Math.min(SpinPID.calculate(spindexPosDeg), 0.55);
 
-        power = Math.min(SpinPID.calculate(spindexPosDeg), 0.5);
+        boolean shouldBeMoving = Spindex.getPower() >= minO;
 
-        if (Math.abs(targetPos - Spindex.getCurrentPosition()) < 2){
+        if (shouldBeMoving && Math.abs(SpinPID.getPositionError() - lastError) >= tolerance) {
+            stuckDetectionTimer.reset();
+        }
+
+        if (shouldBeMoving && stuckDetectionTimer.seconds() >= 0.8 && shouldPulse) {
+            Spindex.setPower(-1);
+        } else if (Math.abs(SpinPID.getPositionError()) < tolerance) {
             Spindex.setPower(0);
-        }else {
+        } else {
             Spindex.setPower(power);
         }
 
-       /* normRed = colors.red/colors.alpha;
+        lastError = SpinPID.getPositionError();
+
+        /*colors = colorSensor.getNormalizedColors();
+
+        normRed = colors.red/colors.alpha;
         normBlue = colors.blue/colors.alpha;
         normGreen = colors.green/colors.alpha;
 
@@ -155,8 +168,8 @@ public class SpindexSubsystem extends SubsystemBase {
             detectedColor = DetectedColor.Green;
         }else {
             detectedColor = DetectedColor.Unknown;
-        }
-*/
+        }*/
+
 
         FtcDashboard.getInstance().getTelemetry().addData("shootMode", Shootmode);
         FtcDashboard.getInstance().getTelemetry().addData("spindex target pos", targetPos);
@@ -164,38 +177,41 @@ public class SpindexSubsystem extends SubsystemBase {
         FtcDashboard.getInstance().getTelemetry().addData("distanciaB", distCm);
         FtcDashboard.getInstance().getTelemetry().addData("nBalls", nBalls);
         FtcDashboard.getInstance().getTelemetry().addData("spinError", SpinPID.getPositionError());
+        FtcDashboard.getInstance().getTelemetry().addData("spindex loop time", loopTime.milliseconds());
+        FtcDashboard.getInstance().getTelemetry().addData("spindex should be moving", shouldBeMoving);
+        FtcDashboard.getInstance().getTelemetry().addData("spindex stuck time", stuckDetectionTimer.seconds());
         FtcDashboard.getInstance().getTelemetry().addData("spindexPower", Spindex.getPower());
-        FtcDashboard.getInstance().getTelemetry().addData("red", normRed);
         FtcDashboard.getInstance().getTelemetry().addData("blue", normBlue);
         FtcDashboard.getInstance().getTelemetry().addData("green", normGreen);
         FtcDashboard.getInstance().getTelemetry().addData("detected color", detectedColor);
         FtcDashboard.getInstance().getTelemetry().addData("Patron", obeliskPattern);
+
+        loopTime.reset();
     }
 
-
-    public DetectedColor getDetectedColor(){
+    public DetectedColor getDetectedColor() {
         colors = colorSensor.getNormalizedColors();
 
-        normRed = colors.red/colors.alpha;
-        normBlue = colors.blue/colors.alpha;
-        normGreen = colors.green/colors.alpha;
+        normRed = colors.red / colors.alpha;
+        normBlue = colors.blue / colors.alpha;
+        normGreen = colors.green / colors.alpha;
 
 
-        if (normRed > 0.016 && normBlue > 0.03 && normGreen< 0.05){
+        if (normRed > 0.016 && normBlue > 0.03 && normGreen < 0.05) {
             return DetectedColor.Purple;
         } else if (normRed < 0.03 && normBlue < 0.09 && normGreen > 0.035) {
             return DetectedColor.Green;
-        }else {
-           return DetectedColor.Unknown;
+        } else {
+            return DetectedColor.Unknown;
         }
 
     }
 
-    public double getspindexPos(){
+    public double getspindexPos() {
         return Spindex.getCurrentPosition();
     }
 
-    public void setnBalls(int nBalls){
+    public void setnBalls(int nBalls) {
         SpindexSubsystem.nBalls = nBalls;
     }
 
@@ -225,7 +241,7 @@ public class SpindexSubsystem extends SubsystemBase {
     }
 
     public void advanceOneIndex() {
-       targetPos -= 120;
+        targetPos -= 120;
     }
 
     public void returnOneIndex() {
@@ -245,54 +261,50 @@ public class SpindexSubsystem extends SubsystemBase {
     }
 
     public boolean getBPresence() {
-        return (distCm < 4);
+        return (distCm < 6);
     }
 
     public void setTargetPos(double targetPos) {
         this.targetPos = targetPos;
     }
+
     public double getTargetPos() {
         return targetPos;
     }
 
-    public void setShooting(boolean isShooting){
+    public void setShooting(boolean isShooting) {
         this.isShooting = isShooting;
     }
 
-    public double getPatternOffset(){
-        if (obeliskPattern == Pattern.PGP){
+    public double getPatternOffset() {
+        if (obeliskPattern == Pattern.PGP) {
             return GrenBallPos + 120;
         } else if (obeliskPattern == Pattern.PPG) {
             return GrenBallPos - 120;
         } else if (obeliskPattern == Pattern.GPP) {
             return GrenBallPos;
-        }else {
+        } else {
             if (nBalls == 3) {
                 return targetPos;
-            }else {
+            } else {
                 return (targetPos + 60);
             }
         }
     }
 
-    public double getPatternOffsetShootcMode(){
-        if (obeliskPattern == Pattern.PGP){
+    public double getPatternOffsetShootcMode() {
+        if (obeliskPattern == Pattern.PGP) {
             return GrenBallPos + 120;
         } else if (obeliskPattern == Pattern.PPG) {
             return GrenBallPos - 120;
         } else if (obeliskPattern == Pattern.GPP) {
             return GrenBallPos;
-        }else {
+        } else {
             return (targetPos + 60);
         }
     }
 
-    public void SARSP(){
-        Spindex.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Spindex.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    public void SARSP() {
+        spindexEncoderOffset = Spindex.getCurrentPosition();
     }
-
-
-
-
 }

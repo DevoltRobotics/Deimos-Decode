@@ -20,7 +20,7 @@ public class IntakeHoldCMD extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        intakeSubsystem.Stop();
+
     }
 
     @Override

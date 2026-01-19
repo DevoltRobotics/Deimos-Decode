@@ -64,7 +64,7 @@ public abstract class OpModeCommand extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         CommandScheduler.getInstance().registerSubsystem(
-                pedroSubsystem = new PedroSubsystem(hardwareMap),
+                pedroSubsystem = new PedroSubsystem(hardwareMap, alliance),
                 hookSubsystem = new HookSubsystem(hardwareMap),
                 intakeSubsystem = new IntakeSubsystem(hardwareMap),
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
@@ -116,7 +116,6 @@ public abstract class OpModeCommand extends OpMode {
         logEntries.add(new CommandLogEntry(durationMillis, entry, message));
     }
 
-
     static int entryCount;
     static HashMap<Integer, Integer> hashCodeMapping = new HashMap<>();
 
@@ -144,11 +143,6 @@ public abstract class OpModeCommand extends OpMode {
             this.telemetryCaption = telemetryCaption;
             this.telemetryMessage = telemetryMessage;
         }
-    }
-
-    @Override
-    public void stop(){
-
     }
 
 }

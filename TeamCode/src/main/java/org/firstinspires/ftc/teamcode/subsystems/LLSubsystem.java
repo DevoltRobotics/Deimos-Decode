@@ -100,7 +100,7 @@ public class LLSubsystem extends SubsystemBase {
             }
         }
 
-        return Pattern.UNKNOWN;
+        return Pattern.GPP;
     }
 
     public void setObeliskPipeline() {

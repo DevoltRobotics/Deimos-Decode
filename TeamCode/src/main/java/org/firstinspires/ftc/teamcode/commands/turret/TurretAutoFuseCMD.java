@@ -1,52 +1,59 @@
 package org.firstinspires.ftc.teamcode.commands.turret;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.MovingStatistics;
+import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.CommandBase;
 
-import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.subsystems.LLSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 
-public class TurretAutoFuseCMD extends TurretToPosCMD {
-
-    public static double tX;
+public class TurretAutoFuseCMD extends CommandBase {
 
     private final TurretSubsystem turret;
     private final LLSubsystem ll;
 
-    private final MovingStatistics llAverage = new MovingStatistics(5);
+    private ElapsedTime llTimeoutTimer = new ElapsedTime();
+    private ElapsedTime odoTimeoutTimer = new ElapsedTime();
+
+    Command activeCommand;
 
     public TurretAutoFuseCMD(TurretSubsystem subsystem, LLSubsystem llSubsystem) {
-        super(subsystem, 0d, false);
         this.turret = subsystem;
         this.ll = llSubsystem;
 
+        activeCommand = new TurretAutoOdoCMD(subsystem);
+
         // require both so nothing else fights LL pipeline / turret
-        addRequirements(subsystem, llSubsystem);
+        addRequirements(subsystem);
     }
 
     @Override
     public void initialize() {
-        ll.setAimingPipeline();
-        llAverage.clear();
+        activeCommand.initialize();
     }
 
     @Override
     public void execute() {
-        ll.setAimingPipeline();
-
-        // If LL valid, feed measurement to subsystem KF
-        if (ll.result != null && ll.result.isValid()) {
-            Double tx = ll.getAllianceTX();
-
-            if (tx != null) {
-                // keep your alliance adjustment
-                turret.pushLimelightMeasurement(tx);
-            }
+        if(ll.getAllianceTX() != null) {
+            llTimeoutTimer.reset();
         }
 
-        // Always aim using fused setpoint (KF already predicted from odo inside periodic)
-        targetPos = turret.getFusedTurretGoalAngle();
-        super.execute();
+        if(ll.getAllianceTX() == null && !(activeCommand instanceof TurretAutoOdoCMD) && llTimeoutTimer.seconds() > 2) {
+            activeCommand = new TurretAutoOdoCMD(turret);
+            odoTimeoutTimer.reset();
+            activeCommand.initialize();
+        } else if(ll.getAllianceTX() != null && !(activeCommand instanceof TurretAutoLLCMD) && odoTimeoutTimer.seconds() > 2){
+            activeCommand = new TurretAutoLLCMD(turret, ll);
+            activeCommand.initialize();
+        }
+
+        activeCommand.execute();
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        activeCommand.end(interrupted);
     }
 }

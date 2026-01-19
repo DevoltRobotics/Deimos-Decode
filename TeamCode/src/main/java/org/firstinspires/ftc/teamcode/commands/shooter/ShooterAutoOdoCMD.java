@@ -16,12 +16,12 @@ public class ShooterAutoOdoCMD extends CommandBase {
     static {
         VelocityLUT.add(0, 0);
 
-        VelocityLUT.add(56, 1100);
-        VelocityLUT.add(75, 1115);
-        VelocityLUT.add(101, 1210);
-        VelocityLUT.add(134, 1380);
-        VelocityLUT.add(168, 1560); // new
-        VelocityLUT.add(211, 1640);
+        VelocityLUT.add(36, 1100);
+        VelocityLUT.add(54, 1120);
+        VelocityLUT.add(88, 1230);
+        VelocityLUT.add(122, 1410);
+        VelocityLUT.add(160, 1560); // new
+        VelocityLUT.add(205, 1640);
 
         VelocityLUT.add(1000000000, 10000);
 

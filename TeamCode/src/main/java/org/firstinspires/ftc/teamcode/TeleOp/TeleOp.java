@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import com.bylazar.gamepad.Stick;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.button.Button;
@@ -29,6 +30,7 @@ import org.firstinspires.ftc.teamcode.commands.transfer.StopTransferCMD;
 import org.firstinspires.ftc.teamcode.commands.transfer.TransferCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoOdoCMD;
+import org.firstinspires.ftc.teamcode.commands.turret.TurretPowerCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 
@@ -55,9 +57,8 @@ public abstract class TeleOp extends OpModeCommand {
         new HookDownCMD(hookSubsystem).schedule();
 
         shooterSubsystem.setDefaultCommand(new ShooterAutoOdoCMD(shooterSubsystem,turretSubsystem));
-        turretSubsystem.setDefaultCommand(new TurretAutoOdoCMD(turretSubsystem));
-
         spindexSubsystem.setDefaultCommand(new SpindexModeDefaultCMD(spindexSubsystem));
+        spindexSubsystem.shouldPulse = false;
 
         pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1, alliance));
 
@@ -70,7 +71,21 @@ public abstract class TeleOp extends OpModeCommand {
                 Garra, GamepadKeys.Button.A
         );
 
-        IntakeIn.whenHeld(new IntakeInCMD(intakeSubsystem));
+
+        IntakeIn.whenHeld(new IntakeInCMD(intakeSubsystem,spindexSubsystem));
+
+        Button Turretauto = new GamepadButton(
+                Garra, GamepadKeys.Button.X
+        );
+
+
+        Turretauto.toggleWhenPressed(
+              new TurretAutoOdoCMD(turretSubsystem),
+                new TurretPowerCMD(turretSubsystem,gamepad2.left_stick_x)
+        );
+
+
+
 
         Button IntakeOut = new GamepadButton(
                 Garra, GamepadKeys.Button.B
