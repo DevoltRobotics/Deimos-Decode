@@ -6,11 +6,9 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.Subsystem;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.commands.transfer.TransferCMD;
 import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LLSubsystem;
@@ -18,7 +16,7 @@ import org.firstinspires.ftc.teamcode.subsystems.LiftSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.TransferSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.StatusLightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 import java.util.ArrayList;
@@ -40,7 +38,8 @@ public abstract class OpModeCommand extends OpMode {
 
     public LiftSubsystem liftSubsystem;
 
-    public TransferSubsystem transferSubsystem;
+
+    public StatusLightSubsystem statusLightSubsystem;
 
     private ArrayList<CommandLogEntry> logEntries = new ArrayList<>();
 
@@ -72,7 +71,7 @@ public abstract class OpModeCommand extends OpMode {
                 spindexSubsystem = new SpindexSubsystem(hardwareMap),
                 llSubsystem = new LLSubsystem(hardwareMap, alliance),
                 liftSubsystem = new LiftSubsystem(hardwareMap),
-                transferSubsystem = new TransferSubsystem(hardwareMap)
+                statusLightSubsystem = new StatusLightSubsystem(hardwareMap)
 
         );
 

@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.LastPosSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
@@ -25,6 +26,7 @@ public class spindex_test extends OpModeCommand {
 
     @Override
     public void initialize() {
+        intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
 
         new RunCommand(()->{
            telemetry.update();

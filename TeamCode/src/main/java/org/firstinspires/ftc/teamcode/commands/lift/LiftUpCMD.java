@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.commands.intake;
+package org.firstinspires.ftc.teamcode.commands.lift;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
 
@@ -18,6 +18,12 @@ public class LiftUpCMD extends CommandBase {
 
     @Override
     public void initialize(){
+        liftSubsystem.liftUp();
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+    liftSubsystem.liftStop();
     }
 
     @Override

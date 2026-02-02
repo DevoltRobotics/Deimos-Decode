@@ -15,7 +15,6 @@ public class IntakeSubsystem extends SubsystemBase {
     public IntakeSubsystem(HardwareMap hMap){
         intake = hMap.get(DcMotor.class,"intake");
 
-        setDefaultCommand(new IntakeHoldCMD(this));
     }
 
     public void In(){
@@ -31,6 +30,6 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void Hold(){
-        intake.setPower(-0.2);
+        intake.setPower(-0.3);
     }
 }

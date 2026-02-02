@@ -15,7 +15,7 @@ public class HookSubsystem extends SubsystemBase {
     }
 
     public void hookUp(){
-        hook.setPosition(0.84);
+        hook.setPosition(0.86);
     }
 
     public void addnFLick(){

@@ -17,25 +17,20 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 
 import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.Pattern;
 import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
 import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
-import org.firstinspires.ftc.teamcode.commands.intake.IntakeOutCMD;
+import org.firstinspires.ftc.teamcode.commands.intake.intakeDefaultCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
-import org.firstinspires.ftc.teamcode.commands.sorter.AutoIntakeModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.SpindexModeDefaultCMD;
-import org.firstinspires.ftc.teamcode.commands.sorter.SpindexPosCMD;
-import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
-import org.firstinspires.ftc.teamcode.commands.turret.TurretPowerCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
-@Autonomous(name = "RedA", group = "##", preselectTeleOp = "TeleOpRed")
+@Autonomous(name = "Red-Cerca", group = "##", preselectTeleOp = "TeleOpRed")
 public class RedA extends OpModeCommand {
 
     private Command autoCommand;
@@ -48,7 +43,6 @@ public class RedA extends OpModeCommand {
     @Override
     public void initialize() {
         spindexSubsystem.setTargetPos(SpindexSubsystem.ShootPos);
-        turretSubsystem.resetEncoder();
 
         spindexSubsystem.SARSP();
         spindexSubsystem.setnBalls(3);
@@ -61,13 +55,13 @@ public class RedA extends OpModeCommand {
 
         Pose ShootPos = new Pose(86.521, 83, Math.toRadians(0));
 
-        Pose Pick1Cycle = new Pose(129, 78.7, 0);
+        Pose Pick1Cycle = new Pose(129, 80, 0);
 
-        Pose P3rdCycle = new Pose(133, 57, 0);
+        Pose P3rdCycle = new Pose(137, 57, 0);
 
         //Pose P4thCycle = new Pose(126, 30.7, 0);
 
-        Pose P4thCycle = new Pose(86.5, 100, 0);
+        Pose P4thCycle = new Pose(87, 110, 0);
 
 
         PathChain FShoot = pedroSubsystem.follower
@@ -125,9 +119,8 @@ public class RedA extends OpModeCommand {
         PathChain Pick4thCycle = pedroSubsystem.follower
                 .pathBuilder()
                 .addPath(
-                        new BezierCurve(
+                        new BezierLine(
                                 ShootPos,
-                                new Pose(76.63803680981596, 26.503067484662584),
                                 P4thCycle
                         )
                 )
@@ -137,14 +130,17 @@ public class RedA extends OpModeCommand {
         shooterSubsystem.setDefaultCommand(new ShooterShootCmd(shooterSubsystem, 1200));
 
         //TODO
-        autoCommand = new SequentialCommandGroup(
-                new IntakeHoldCMD(intakeSubsystem).withTimeout(10),
+        autoCommand =
+                new ParallelCommandGroup(
+                        new intakeDefaultCMD(intakeSubsystem,spindexSubsystem),
+                new SequentialCommandGroup(
+                new TurretToPosCMD(turretSubsystem,0d),
                 new HookDownCMD(hookSubsystem),
                 new ShootModeCMD(spindexSubsystem),
 
                 new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(FShoot),
-                        new TurretToPosCMD(turretSubsystem,-108d,false)
+                        new TurretToPosCMD(turretSubsystem,-109.9)
                         ),
 
                 new RunCommand(() ->
@@ -152,7 +148,7 @@ public class RedA extends OpModeCommand {
                         SpindexSubsystem.obeliskPattern = llSubsystem.getObelisk()
                 ).withTimeout(800),
 
-                new TurretToPosCMD(turretSubsystem,-45d,true),
+                new TurretToPosCMD(turretSubsystem,-45d),
 
 
 
@@ -161,77 +157,42 @@ public class RedA extends OpModeCommand {
 
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.3)),
 
-
                         new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(GoTo1Cycle),
-                                new SpindexModeDefaultCMD(spindexSubsystem).withTimeout(4500),
-                        new IntakeInCMD(intakeSubsystem,spindexSubsystem)
-                ),
+                                new SpindexModeDefaultCMD(spindexSubsystem)
+                        ),
                 new WaitCommand(300),
 
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(1)),
                 new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(Shoot2Cycle),
-                        new IntakeHoldCMD(intakeSubsystem)
+                        new SpindexModeDefaultCMD(spindexSubsystem)
                 ),
 
                 new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
-                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.34)),
+                new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.4)),
 
                         new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(Pick3rdCycle),
                         new SpindexModeDefaultCMD(spindexSubsystem),
-                        new InstantCommand(()->spindexSubsystem.setFirstInitIn(true)),
-                        new IntakeInCMD(intakeSubsystem,spindexSubsystem)
+                        new InstantCommand(()->spindexSubsystem.setFirstInitIn(true))
                 ),
 
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(1)),
-                new ShootModeCMD(spindexSubsystem),
                 new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(Shoot3rdCycle),
-                        new IntakeHoldCMD(intakeSubsystem)
+                        new SpindexModeDefaultCMD(spindexSubsystem)
                 ),
 
                 new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
                 new ParallelDeadlineGroup(
-                        new WaitCommand(700),
                         pedroSubsystem.followPathCmd(Pick4thCycle),
-                        new ShootModeCMD(spindexSubsystem)
+                        new TurretToPosCMD(turretSubsystem,0d),
+                        new SpindexModeDefaultCMD(spindexSubsystem)
                 )
-        );
+        ));
     }
-
-    public Command shootThree(double gppSpindexOffset, double pgpSpindexOffset, double ppgSpindexOffset, Double turretAngle, int shooterVelocity) {
-        return new SequentialCommandGroup(
-               // new TurretToPosCMD(turretSubsystem, turretAngle),
-                new ShootModeCMD(spindexSubsystem),
-                new WaitUntilCommand(() -> shooterSubsystem.getCurrentVelocity() >= shooterVelocity - 20),
-                new InstantCommand(()-> spindexSubsystem.setnBalls(3)),
-
-                        new Shoot3BallsCMD(hookSubsystem, spindexSubsystem, () -> {
-                            switch (spindexSubsystem.obeliskPattern) { // we should have already detected and stored Pattern by now
-                                case UNKNOWN: // when unknown, return GPP
-                                case GPP:
-                                    return gppSpindexOffset;
-                                case PGP:
-                                    return pgpSpindexOffset;
-                                case PPG:
-                                    return ppgSpindexOffset;
-                            }
-
-                            return gppSpindexOffset; // when unknown, return GPP
-                        }),
-
-
-
-                new InstantCommand(() -> log(2000, "shootThree", "Done with sequence"))
-        ).raceWith(
-                new IntakeHoldCMD(intakeSubsystem),
-                new ShooterShootCmd(shooterSubsystem, shooterVelocity).asProxy()
-        );
-    }
-
 
     @Override
     public void start() {

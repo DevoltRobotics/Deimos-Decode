@@ -13,7 +13,6 @@ public class AutoIntakeModeCMD extends CommandBase {
     // Estado interno del autoindex
     private boolean objectLatched = false;
     private double lastTriggerTimeMs = -9999;
-    private Double lastTriggerPosRad = null;
     private final ElapsedTime timer = new ElapsedTime();
 
 
@@ -25,10 +24,8 @@ public class AutoIntakeModeCMD extends CommandBase {
 
     @Override
     public void initialize() {
-        spindex.detectedColor = SpindexSubsystem.DetectedColor.Unknown;
         objectLatched = false;
         lastTriggerTimeMs = -9999;
-        lastTriggerPosRad = spindex.getTargetPos();
         timer.reset();
 
         if(spindex.getFirstInitIn()) {
@@ -44,14 +41,9 @@ public class AutoIntakeModeCMD extends CommandBase {
     @Override
     public void execute() {
         double nowMs = timer.milliseconds();
-        double pos = spindex.getTargetPos();
 
-        boolean Bpresence = spindex.getBPresence();
-
-        //bola detectada
-        if (Bpresence && !objectLatched && !spindex.getShootmode()) {
-             spindex.detectedColor = spindex.getDetectedColor();
-             if (spindex.detectedColor == SpindexSubsystem.DetectedColor.Green){
+        if (spindex.getBPresence() && !objectLatched && !spindex.getShootmode()) {
+             if (spindex.sampleColorBestAlpha(8) == SpindexSubsystem.DetectedColor.Green){
                  spindex.GrenBallPos = (spindex.getTargetPos() + 180);
              }
             spindex.advanceOneIndex();
@@ -59,23 +51,13 @@ public class AutoIntakeModeCMD extends CommandBase {
 
             objectLatched = true;
             lastTriggerTimeMs = nowMs;
-            lastTriggerPosRad = pos;
         }
 
         double dt = nowMs - lastTriggerTimeMs;
 
-        FtcDashboard.getInstance().getTelemetry().addData("lastTriggerPosRad", lastTriggerPosRad);
-
-        if (!Bpresence
-                && dt > SpindexSubsystem.TRIGGER_COOLDOWN_MS
-        ) {
+        if (!spindex.getBPresence() && dt > SpindexSubsystem.TRIGGER_COOLDOWN_MS) {
             objectLatched = false;
         }
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-
     }
 
     @Override

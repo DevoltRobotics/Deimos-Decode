@@ -7,41 +7,32 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.config.AngleKalman1D;
 
+import java.awt.font.NumericShaper;
+
 @Config
 public class TurretSubsystem extends SubsystemBase {
 
-    CRServo Torreta;
-    CRServo Torreta2;
+    Servo Torreta;
+
 
     public static double lowerLimit = -110;
-    public static double upperLimit = 215;
+    public static double upperLimit = 207.0642;
 
-    public static double LL_OFFSET = 3.6;
 
-    public static PIDFCoefficients encPidfCoeffs = new PIDFCoefficients(0.0065, 0, 0.00029, 0);
-    public static PIDFCoefficients llPidfCoeffs = new PIDFCoefficients(0.004, 0, 0.0001, 0);
-
-    public static double Minimum = 0.061;
-    public static double MinimumEnc = 0.06;
 
     double goalX, goalY;
 
-    DcMotor encoder;
 
     public static double currentRelativePos;
 
-    private AngleKalman1D fuse;
-    private double fusedTurretGoalDeg = 0;
-
-    public static double kQ = 0.8;   // tune
-    public static double kRGood = 4; // tune
-    public static double kRBad  = 25;// tune
 
     PedroSubsystem pedroSubsystem;
 
@@ -55,6 +46,10 @@ public class TurretSubsystem extends SubsystemBase {
      public double offsetY;
      public double offsetX;
 
+     public static double kF = 0.0244;
+
+     public static double LeftkF = 0.019;
+
     Alliance alliance;
 
     public void setGoalPos(double x, double y) {
@@ -63,9 +58,9 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public TurretSubsystem(HardwareMap hMap, PedroSubsystem pedroSubsystem, Alliance alliance) {
-        Torreta = hMap.get(CRServo.class, "torreta");
-        Torreta2 = hMap.get(CRServo.class, "torreta2");
-        encoder = hMap.get(DcMotor.class, "intake");
+        Torreta = hMap.get(Servo.class, "torreta");
+        Torreta.setDirection(Servo.Direction.REVERSE);
+
         this.pedroSubsystem = pedroSubsystem;
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
@@ -75,23 +70,10 @@ public class TurretSubsystem extends SubsystemBase {
         } else {
             setGoalPos(130, 130);
         }
-        fuse = new AngleKalman1D(
-                0.0,     // x0: estimación inicial
-                9.0,     // P0: incertidumbre inicial
-                kQ,      // Q
-                kRGood   // R inicial
-        );
+
     }
 
-    public void setTurretPower(double power) {
-        if ((currentRelativePos < lowerLimit && power > 0) || (currentRelativePos > upperLimit && power < 0)) {
-            Torreta.setPower(0);
-            Torreta2.setPower(0);
-        } else {
-            Torreta.setPower(power);
-            Torreta2.setPower(power);
-        }
-    }
+
 
     @Override
     public void periodic() {
@@ -103,53 +85,33 @@ public class TurretSubsystem extends SubsystemBase {
         offsetX = (0 * Math.cos(heading)) + (-1.22*Math.sin(heading));
         offsetY = (-0*Math.sin(heading)) + (-1.22 * Math.cos(heading));
 
-        double dx = goalX - (robotPos.getX()+ offsetX);
-        double dy = goalY - (robotPos.getY()+ offsetY);
+        double dx = goalX - (robotPos.getX() + offsetX); //offsetx
+        double dy = goalY - (robotPos.getY() + offsetY); //offsety
 
         robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));//direction
         distanceToGoal = Math.hypot(dx,dy);//magnitude
 
-        turretToGoalAngle =AngleUnit.normalizeDegrees(Math.toDegrees(robotPos.getHeading())) - robotToGoalAngle;
+        turretToGoalAngle =AngleUnit.normalizeDegrees(Math.toDegrees(robotPos.getHeading()) - robotToGoalAngle );
 
-        fuse.setQ(kQ);
-        fuse.predictFromOdo(turretToGoalAngle);
-
-        fusedTurretGoalDeg = fuse.get();
-
-        double encoderDegrees = (encoder.getCurrentPosition() * 360) / 8192.0; //8192 ticks per rev
-        // zero is with the turret pointing to the front of the bot, left is negative front right is positive
-        currentRelativePos =encoderDegrees / (109 / 24.0); // gear ratio
-
-        FtcDashboard.getInstance().getTelemetry().addData("turret power", Torreta.getPower());
-        FtcDashboard.getInstance().getTelemetry().addData("turret angle", currentRelativePos);
         FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
         FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal() );
-        FtcDashboard.getInstance().getTelemetry().addData("fused angle", getFusedTurretGoalAngle());
+        FtcDashboard.getInstance().getTelemetry().addData("Servo pos", Torreta.getPosition() );
+
     }
 
-    /** Call this from your LL command only when LL is valid. */
-    public void pushLimelightMeasurement(double txOffsetDeg) {
 
-        // Adaptive R: when target is big/close -> trust LL more
-        fuse.setR(kRBad);
 
-        // Paralaje por cámara a la derecha:
-        double parallaxDeg = Math.toDegrees(Math.atan2(LL_OFFSET, distanceToGoal));
 
-        // Convert tx error to absolute turret setpoint measurement
-        double llDesired = AngleKalman1D.normalizeDeg(currentRelativePos - txOffsetDeg - parallaxDeg); // flip sign if needed
-        FtcDashboard.getInstance().getTelemetry().addData("ll desired", llDesired);
-        FtcDashboard.getInstance().getTelemetry().addData("ll parallax", parallaxDeg);
 
-        fuse.updateWithLL(llDesired);
-    }
+    public void TurretSetPos(double PosDeg){
+        double servoPos = (PosDeg - lowerLimit) / (upperLimit - lowerLimit);
+        if (PosDeg > 0) {
+            servoPos += kF;
+        }else if (PosDeg < 0) {
+            servoPos -= LeftkF;
+        }
+        Torreta.setPosition(Range.clip(servoPos,0,1));
 
-    public double getFusedTurretGoalAngle() {
-        return fusedTurretGoalDeg;
-    }
-
-    public double getRobotToGoalAngle() {
-        return robotToGoalAngle;
     }
 
     public double getTurretToGoalAngle() {
@@ -161,13 +123,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
 
-    public double getCurrentPosition() {
-        return currentRelativePos;
-    }
 
-    public void resetEncoder() {
-        encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-    }
+
 
 }

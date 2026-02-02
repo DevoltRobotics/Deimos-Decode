@@ -5,39 +5,38 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
-public class IntakeInCMD extends CommandBase {
+public class intakeDefaultCMD extends CommandBase {
 
-    private final IntakeSubsystem intakeSubsystem;
-
+    private final IntakeSubsystem intake;
     private final SpindexSubsystem spindex;
 
-    public IntakeInCMD(IntakeSubsystem intakeSubsystem,SpindexSubsystem spindexSubsystem){
-
-        this.intakeSubsystem = intakeSubsystem;
-        addRequirements(intakeSubsystem);
-        spindex = spindexSubsystem;
-
+    public intakeDefaultCMD(IntakeSubsystem intake, SpindexSubsystem spindex) {
+        this.intake = intake;
+        this.spindex = spindex;
+        addRequirements(intake);
     }
-
 
     @Override
     public void execute() {
 
         if (spindex.getnBalls() == 3 && spindex.getExtraB() || spindex.isShooting && spindex.getExtraB()) {
-            intakeSubsystem.Out();
+            intake.Out();
         }
         else if (spindex.getBPresence() || spindex.getnBalls() == 3) {
-            intakeSubsystem.Hold();
+            intake.Hold();
         }
         else {
-            intakeSubsystem.In();
+            intake.In();
         }
     }
 
     @Override
-    public boolean isFinished(){
-        return false;
+    public void end(boolean interrupted) {
+        intake.Stop(); // recomendado para seguridad
     }
 
-
+    @Override
+    public boolean isFinished() {
+        return false; // default command
+    }
 }

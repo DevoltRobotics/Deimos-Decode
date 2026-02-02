@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
-import com.bylazar.gamepad.Stick;
-import com.qualcomm.robotcore.util.Range;
-import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.command.button.Trigger;
@@ -10,6 +7,9 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.commands.intake.intakeDefaultCMD;
+import org.firstinspires.ftc.teamcode.commands.lift.LiftUpCMD;
+import org.firstinspires.ftc.teamcode.commands.light.SetAutoStatus;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
 import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
@@ -20,17 +20,11 @@ import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeOutCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.LiftDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.LiftHoldCMD;
-import org.firstinspires.ftc.teamcode.commands.intake.LiftUpCMD;
-import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.IntakeModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.LastPosSorterCMD;
-import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.SpindexModeDefaultCMD;
-import org.firstinspires.ftc.teamcode.commands.transfer.StopTransferCMD;
-import org.firstinspires.ftc.teamcode.commands.transfer.TransferCMD;
-import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoLLCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoOdoCMD;
-import org.firstinspires.ftc.teamcode.commands.turret.TurretPowerCMD;
+import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 
@@ -49,23 +43,21 @@ public abstract class TeleOp extends OpModeCommand {
         pedroSubsystem.follower.setPose(PedroSubsystem.robotPose);
         Chasis = new GamepadEx(gamepad1);
         Garra = new GamepadEx(gamepad2);
-
-        Garra.getGamepadButton(GamepadKeys.Button.X).toggleWhenActive(
-               new TransferCMD(transferSubsystem),new StopTransferCMD(transferSubsystem)
-       );
+        
 
         new HookDownCMD(hookSubsystem).schedule();
+        new TurretToPosCMD(turretSubsystem,0d).schedule();
 
         shooterSubsystem.setDefaultCommand(new ShooterAutoOdoCMD(shooterSubsystem,turretSubsystem));
         spindexSubsystem.setDefaultCommand(new SpindexModeDefaultCMD(spindexSubsystem));
-        spindexSubsystem.shouldPulse = false;
+        statusLightSubsystem.setDefaultCommand(new SetAutoStatus(statusLightSubsystem,spindexSubsystem));
 
         pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1, alliance));
 
         liftSubsystem.setDefaultCommand(new LiftHoldCMD(liftSubsystem));
 
 
-        intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
+        intakeSubsystem.setDefaultCommand(new intakeDefaultCMD(intakeSubsystem,spindexSubsystem));
 
         Button IntakeIn = new GamepadButton(
                 Garra, GamepadKeys.Button.A
@@ -80,8 +72,7 @@ public abstract class TeleOp extends OpModeCommand {
 
 
         Turretauto.toggleWhenPressed(
-              new TurretAutoOdoCMD(turretSubsystem),
-                new TurretPowerCMD(turretSubsystem,gamepad2.left_stick_x)
+              new TurretAutoOdoCMD(turretSubsystem)
         );
 
 

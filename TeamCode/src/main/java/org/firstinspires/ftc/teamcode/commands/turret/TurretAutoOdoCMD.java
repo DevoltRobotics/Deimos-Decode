@@ -4,7 +4,7 @@ import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 public class TurretAutoOdoCMD extends TurretToPosCMD {
     public TurretAutoOdoCMD(TurretSubsystem subsystem) {
-        super(subsystem, 0d, false);
+        super(subsystem, 0d);
         addRequirements(subsystem);
     }
 
@@ -12,5 +12,10 @@ public class TurretAutoOdoCMD extends TurretToPosCMD {
     public void execute() {
         targetPos = (subsystem.getTurretToGoalAngle());
         super.execute();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
     }
 }

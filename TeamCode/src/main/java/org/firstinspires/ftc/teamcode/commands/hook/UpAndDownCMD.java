@@ -13,9 +13,9 @@ public class UpAndDownCMD extends SequentialCommandGroup {
     public UpAndDownCMD(HookSubsystem hookSubsystem, SpindexSubsystem spindexSubsystem) {
         super(
                 new HookUpCMD(hookSubsystem),
-                new WaitCommand(250),
+                new WaitCommand(280),
                 new HookDownCMD(hookSubsystem),
-                new WaitCommand(250),
+                new WaitCommand(280),
                 new InstantCommand(spindexSubsystem::lessBalls)
         );
     }

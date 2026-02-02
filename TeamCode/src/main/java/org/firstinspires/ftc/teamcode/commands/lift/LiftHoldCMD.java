@@ -18,7 +18,7 @@ public class LiftHoldCMD extends CommandBase {
 
     @Override
     public void initialize(){
-
+        liftSubsystem.liftStop();
     }
 
     @Override

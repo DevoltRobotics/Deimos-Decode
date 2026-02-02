@@ -15,11 +15,15 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 import java.util.function.DoubleSupplier;
 
 public class Shoot3BallsCMD extends SequentialCommandGroup {
+    SpindexSubsystem spindexSubsystem;
     public Shoot3BallsCMD(HookSubsystem hookSubsystem, SpindexSubsystem spindexSubsystem, DoubleSupplier startingSpindex) {
+        this.spindexSubsystem = spindexSubsystem;
         if (startingSpindex != null) {
-            addCommands(new SpindexPosCMD(spindexSubsystem, startingSpindex));
+            addCommands(new InstantCommand(() -> spindexSubsystem.setShooting(true)),new SpindexPosCMD(spindexSubsystem, startingSpindex)
+                    );
         } else {
-            addCommands(new ShootModeCMD(spindexSubsystem));
+            addCommands(new InstantCommand(() -> spindexSubsystem.setShooting(true)),new ShootModeCMD(spindexSubsystem)
+                    );
         }
 
         addCommands(
@@ -40,9 +44,21 @@ public class Shoot3BallsCMD extends SequentialCommandGroup {
                 new InstantCommand(() -> spindexSubsystem.setShooting(false))
         );
 
+
     }
+
+
+
 
     public Shoot3BallsCMD(HookSubsystem hookSubsystem, SpindexSubsystem spindexSubsystem) {
         this(hookSubsystem, spindexSubsystem, null);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        super.end(interrupted);
+        if(interrupted) {
+            spindexSubsystem.setShooting(false);
+        }
     }
 }

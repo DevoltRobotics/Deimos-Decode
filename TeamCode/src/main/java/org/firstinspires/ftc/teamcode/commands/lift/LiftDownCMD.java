@@ -18,7 +18,14 @@ public class LiftDownCMD extends CommandBase {
 
     @Override
     public void initialize(){
+        liftSubsystem.liftDown();
     }
+
+    @Override
+    public void end(boolean interrupted) {
+    liftSubsystem.liftStop();
+    }
+
 
     @Override
     public boolean isFinished(){
