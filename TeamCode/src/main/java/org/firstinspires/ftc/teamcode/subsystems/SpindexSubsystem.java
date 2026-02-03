@@ -89,7 +89,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
     double DeltaAngleRad = 0;
 
-    double DeltaAngleDeg = 0;
+    public double DeltaAngleDeg = 0;
 
     double Normpos = 0;
 
@@ -99,7 +99,7 @@ public class SpindexSubsystem extends SubsystemBase {
         laser.setMode(DigitalChannel.Mode.INPUT);
 
         colorSensor = hMap.get(NormalizedColorSensor.class, "color");
-        colorSensor.setGain(3);
+        colorSensor.setGain(8);
 
         Spindex = hMap.get(DcMotor.class, "spindex");
         Spindex.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -152,6 +152,8 @@ public class SpindexSubsystem extends SubsystemBase {
 
 
         detectedColor = getDetectedColor();
+        distCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
+
 
 
         FtcDashboard.getInstance().getTelemetry().addData("shootMode", Shootmode);
@@ -184,11 +186,9 @@ public class SpindexSubsystem extends SubsystemBase {
         normGreen = colors.green / colors.alpha;
 
 
-        if (normRed > 0.016 && normBlue > 0.03 && normGreen < 0.03) {
-            return DetectedColor.Purple;
-        } else if (normRed < 0.03 && normBlue < 0.09 && normGreen > 0.04) {
+        if (normRed < 0.075 && normBlue > 0.06 && normGreen > 0.095) {
             return DetectedColor.Green;
-        } else {
+        }else {
             return DetectedColor.Unknown;
         }
 
@@ -213,13 +213,20 @@ public class SpindexSubsystem extends SubsystemBase {
         double ng = g / bestAlpha;
         double nb = b / bestAlpha;
 
-        if (nr > 0.016 && nb > 0.03 && ng < 0.03) {
-            return DetectedColor.Purple;
-        } else if (nr < 0.03 && nb < 0.09 && ng > 0.04) {
+        FtcDashboard.getInstance().getTelemetry().addData("nr", nr);
+        FtcDashboard.getInstance().getTelemetry().addData("ng",ng);
+        FtcDashboard.getInstance().getTelemetry().addData("nb", nb);
+
+
+
+
+        if (nr < 0.13 && nb > 0.12 && ng > 0.2) {
             return DetectedColor.Green;
-        } else {
+        }else {
             return DetectedColor.Unknown;
         }
+
+
     }
 
 
@@ -279,7 +286,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
     public boolean getBPresence() {
         distCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
-        return (distCm < 6);
+        return (distCm < 5);
     }
 
     public void setTargetPos(double targetPos) {
