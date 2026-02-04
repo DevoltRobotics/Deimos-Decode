@@ -43,7 +43,7 @@ public class AutoIntakeModeCMD extends CommandBase {
         double nowMs = timer.milliseconds();
 
         if (spindex.getBPresence() && !objectLatched && !spindex.getShootmode()) {
-             if (spindex.sampleColorBestAlpha(20) == SpindexSubsystem.DetectedColor.Green){
+             if (spindex.getDetectedColor() == SpindexSubsystem.DetectedColor.Green){
                  spindex.GrenBallPos = (spindex.getTargetPos() + 180);
              }
             spindex.advanceOneIndex();

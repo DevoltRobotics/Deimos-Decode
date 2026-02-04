@@ -28,17 +28,17 @@ public class Shoot3BallsCMD extends SequentialCommandGroup {
 
         addCommands(
                 new InstantCommand(() -> spindexSubsystem.setShooting(true)),
-                new WaitCommand(350),
+                new WaitCommand(150),
 
                 new UpAndDownCMD(hookSubsystem, spindexSubsystem),
                 new NextPosSorterCMD(spindexSubsystem),
 
-                new WaitCommand(200),
+                new WaitCommand(150),
 
                 new UpAndDownCMD(hookSubsystem, spindexSubsystem),
                 new NextPosSorterCMD(spindexSubsystem),
 
-                new WaitCommand(200),
+                new WaitCommand(150),
 
                 new UpAndDownCMD(hookSubsystem, spindexSubsystem),
                 new InstantCommand(() -> spindexSubsystem.setShooting(false))

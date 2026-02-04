@@ -65,7 +65,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
     public static PIDFCoefficients Spincoeffs = new PIDFCoefficients(0.012, 0, 0.0008, 0);
 
-    public static double TRIGGER_COOLDOWN_MS = 120;             // anti rebote tiempo
+    public static double TRIGGER_COOLDOWN_MS = 200;             // anti rebote tiempo
     private double targetPos;
     private boolean Shootmode = false;     // TRUE = modo manual/tiro; FALSE = modo indexar auto
     public static int nBalls = 0; // CONTAODR INTERNO
@@ -151,8 +151,6 @@ public class SpindexSubsystem extends SubsystemBase {
         }
 
 
-        detectedColor = getDetectedColor();
-        distCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
 
 
 
@@ -166,9 +164,6 @@ public class SpindexSubsystem extends SubsystemBase {
         FtcDashboard.getInstance().getTelemetry().addData("detected color", detectedColor);
         FtcDashboard.getInstance().getTelemetry().addData("Patron", obeliskPattern);
         FtcDashboard.getInstance().getTelemetry().addData("GreenBPos", GrenBallPos);
-        FtcDashboard.getInstance().getTelemetry().addData("red", normRed);
-        FtcDashboard.getInstance().getTelemetry().addData("blue", normBlue);
-        FtcDashboard.getInstance().getTelemetry().addData("green", normGreen );
         FtcDashboard.getInstance().getTelemetry().addData("Extra ball", laser.getState());
 
 
@@ -181,12 +176,17 @@ public class SpindexSubsystem extends SubsystemBase {
     public DetectedColor getDetectedColor() {
         colors = colorSensor.getNormalizedColors();
 
-        normRed = colors.red / colors.alpha;
-        normBlue = colors.blue / colors.alpha;
-        normGreen = colors.green / colors.alpha;
+        double r = colors.red;
+        double b = colors.blue;
+        double g = colors.green;
+
+        double sum = r+g+b;
+        double gRatio = g/sum;
 
 
-        if (normRed < 0.075 && normBlue > 0.06 && normGreen > 0.095) {
+
+
+        if (gRatio > 0.45 && g>r && g>b) {
             return DetectedColor.Green;
         }else {
             return DetectedColor.Unknown;
@@ -209,18 +209,12 @@ public class SpindexSubsystem extends SubsystemBase {
             }
         }
 
-        double nr = r / bestAlpha;
-        double ng = g / bestAlpha;
-        double nb = b / bestAlpha;
-
-        FtcDashboard.getInstance().getTelemetry().addData("nr", nr);
-        FtcDashboard.getInstance().getTelemetry().addData("ng",ng);
-        FtcDashboard.getInstance().getTelemetry().addData("nb", nb);
+        double sum = r+g+b;
+        double gRatio = g/sum;
 
 
 
-
-        if (nr < 0.13 && nb > 0.12 && ng > 0.2) {
+        if (gRatio > 0.45 && g>r && g>b) {
             return DetectedColor.Green;
         }else {
             return DetectedColor.Unknown;
@@ -286,7 +280,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
     public boolean getBPresence() {
         distCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
-        return (distCm < 5);
+        return (distCm < 4);
     }
 
     public void setTargetPos(double targetPos) {

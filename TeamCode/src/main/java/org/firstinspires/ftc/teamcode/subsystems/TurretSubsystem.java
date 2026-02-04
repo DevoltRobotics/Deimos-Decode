@@ -46,9 +46,9 @@ public class TurretSubsystem extends SubsystemBase {
      public double offsetY;
      public double offsetX;
 
-     public static double kF = 0.0244;
+     public static double kF = 0.014;
 
-     public static double LeftkF = 0.019;
+     public static double LeftkF = 0.016;
 
     Alliance alliance;
 

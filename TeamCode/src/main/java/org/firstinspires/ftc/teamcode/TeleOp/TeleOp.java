@@ -57,7 +57,7 @@ public abstract class TeleOp extends OpModeCommand {
         liftSubsystem.setDefaultCommand(new LiftHoldCMD(liftSubsystem));
 
 
-        intakeSubsystem.setDefaultCommand(new intakeDefaultCMD(intakeSubsystem,spindexSubsystem));
+        intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
 
         Button IntakeIn = new GamepadButton(
                 Garra, GamepadKeys.Button.A
