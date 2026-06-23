@@ -145,7 +145,7 @@ public class BlueA_close extends OpModeCommand {
                         // eval obelisk here to store for the rest of the auto
                         spindexSubsystem.obeliskPattern = llSubsystem.getObelisk()
                 ).withTimeout(800),
-                new TurretToPosCMD(turretSubsystem,42d),
+                new TurretToPosCMD(turretSubsystem,47d),
                 new RunCommand(() -> spindexSubsystem.setTargetPos(spindexSubsystem.getPatternOffset())).withTimeout(400),
                 new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
 
@@ -165,6 +165,9 @@ public class BlueA_close extends OpModeCommand {
                         new SpindexModeDefaultCMD(spindexSubsystem)
                 ),
 
+
+                        new WaitCommand(400),
+
                 new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
 
 
@@ -183,7 +186,9 @@ public class BlueA_close extends OpModeCommand {
                         new SpindexModeDefaultCMD(spindexSubsystem)
                 ),
 
-                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
+                        new WaitCommand(400),
+
+                        new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
 
                 new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(Pick4thCycle),
@@ -212,11 +217,11 @@ public class BlueA_close extends OpModeCommand {
         PedroSubsystem.robotPose = pedroSubsystem.follower.getPose();
 
 
-        telemetry.addData("patron",spindexSubsystem.obeliskPattern);
+       /* telemetry.addData("patron",spindexSubsystem.obeliskPattern);
         telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());
         telemetry.addData("X", pose.getX());
         telemetry.addData("Y", pose.getY());
-        telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));
+        telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));*/
     }
 }
 

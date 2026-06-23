@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
@@ -19,10 +20,12 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.config.LoggedSubsystem;
+import org.firstinspires.ftc.teamcode.config.PosUtils;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
 
-public class PedroSubsystem extends SubsystemBase {
+public class PedroSubsystem extends LoggedSubsystem {
 
     public final Follower follower;
 
@@ -53,6 +56,19 @@ public class PedroSubsystem extends SubsystemBase {
 
     public Command fieldCentricCmd(Gamepad gamepad,Alliance alliance) {
         return new FieldCentricCmd(gamepad, alliance);
+    }
+
+    @Override
+    public void log(TelemetryPacket packet) {
+        Pose pose = follower.getPose();
+
+        Pose FTCPos = PosUtils.PedrotoFTC(pose);
+
+
+        packet.put("Robot/Pose x", FTCPos.getX());
+        packet.put("Robot/Pose y", FTCPos.getY());
+        packet.put("Robot/Pose heading", FTCPos.getHeading());
+
     }
 
 
@@ -141,7 +157,7 @@ public class PedroSubsystem extends SubsystemBase {
 
         @Override
         public void execute() {
-            FtcDashboard.getInstance().getTelemetry().addData("FollowPathChainCmd", "Following to " + path.endPoint());
+           // FtcDashboard.getInstance().getTelemetry().addData("FollowPathChainCmd", "Following to " + path.endPoint());
         }
 
         @Override

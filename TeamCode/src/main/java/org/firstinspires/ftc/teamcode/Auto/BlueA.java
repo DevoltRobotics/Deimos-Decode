@@ -150,7 +150,9 @@ public class BlueA extends OpModeCommand {
                 ).withTimeout(1100),
                 new ShootModeCMD(spindexSubsystem),
                 new TurretToPosCMD(turretSubsystem,-23d),
-               new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
+                                new WaitCommand(300),
+
+                                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.42)),
                 new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(pick2nd),
@@ -166,7 +168,7 @@ public class BlueA extends OpModeCommand {
                         new SpindexModeDefaultCMD(spindexSubsystem)
                         ),
 
-                                new WaitCommand(200),
+                                new WaitCommand(300),
                                 new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
                 new ParallelDeadlineGroup(
@@ -192,7 +194,7 @@ public class BlueA extends OpModeCommand {
                                 pedroSubsystem.followPathCmd(Shoot3rd),
                                 new SpindexModeDefaultCMD(spindexSubsystem)),
 
-                                new WaitCommand(200),
+                                new WaitCommand(400),
 
                                 new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
@@ -227,10 +229,10 @@ public class BlueA extends OpModeCommand {
         PedroSubsystem.robotPose = pedroSubsystem.follower.getPose();
 
 
-        telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());
+       /* telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());
         telemetry.addData("X", pose.getX());
         telemetry.addData("Y", pose.getY());
         telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));
-        telemetry.update();
+        telemetry.update();*/
     }
 }

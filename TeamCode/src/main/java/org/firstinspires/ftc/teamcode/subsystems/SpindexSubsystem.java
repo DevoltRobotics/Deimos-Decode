@@ -1,40 +1,38 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeRadians;
-
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.math.MathFunctions;
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Pattern;
+import org.firstinspires.ftc.teamcode.config.BallColorSensorPipeline;
+import org.firstinspires.ftc.teamcode.config.LoggedSubsystem;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 @Config
-public class SpindexSubsystem extends SubsystemBase {
+public class SpindexSubsystem extends LoggedSubsystem {
 
     public static Pattern obeliskPattern = Pattern.PGP;
 
-    NormalizedColorSensor colorSensor;
-    NormalizedRGBA colors;
+    RevColorSensorV3 colorSensor;
 
-    float normRed, normBlue, normGreen;
+    OpenCvWebcam colorSensorWebcam;
+    BallColorSensorPipeline colorSensorPipeline = new BallColorSensorPipeline();
 
     DigitalChannel laser;
 
@@ -44,8 +42,9 @@ public class SpindexSubsystem extends SubsystemBase {
         Unknown
     }
 
-
     public DetectedColor detectedColor = DetectedColor.Unknown;
+    public double h, s, v = 0;
+
     public double ticks_per_rev = 8192;
     public boolean isShooting = false;
     public static double IntakePos = 60;
@@ -53,7 +52,6 @@ public class SpindexSubsystem extends SubsystemBase {
     public static double ShootPos = 0;
 
     public double GrenBallPos = 0;
-
 
     public static double tolerance = 1;
 
@@ -94,32 +92,48 @@ public class SpindexSubsystem extends SubsystemBase {
     double Normpos = 0;
 
     public SpindexSubsystem(HardwareMap hMap) {
-
         laser = hMap.get(DigitalChannel.class, "laser");
         laser.setMode(DigitalChannel.Mode.INPUT);
 
-        colorSensor = hMap.get(NormalizedColorSensor.class, "color");
-        colorSensor.setGain(8);
+        colorSensor = hMap.get(RevColorSensorV3.class, "color");
 
         Spindex = hMap.get(DcMotor.class, "spindex");
         Spindex.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         Spindex.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        colorSensorWebcam = OpenCvCameraFactory.getInstance().createWebcam(
+                hMap.get(WebcamName.class, "Webcam 1")
+        );
+
+        colorSensorWebcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                colorSensorWebcam.setPipeline(colorSensorPipeline);
+                colorSensorWebcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT, OpenCvWebcam.StreamFormat.MJPEG);
+
+                //FtcDashboard.getInstance().startCameraStream(colorSensorWebcam, 30);
+            }
+
+            @Override
+            public void onError(int errorCode) {}
+        });
 
         setTargetPos(IntakePos);
         SpinPID = new PIDFController(Spincoeffs);
         SpinPID.setTolerance(2);
-        SpinPID.setMinimumOutput(minO);
+        SpinPID.setMinOutput(minO);
     }
 
     @Override
     public void periodic() {
+        h = colorSensorPipeline.getExportedData(0);
+        s = colorSensorPipeline.getExportedData(1);
+        v = colorSensorPipeline.getExportedData(2);
+
         ff = Math.signum(SpinPID.getPositionError()) * kS;
 
-
-        SpinPID.setMinimumOutput(minO);
+        SpinPID.setMinOutput(minO);
         SpinPID.setCoefficients(Spincoeffs);
-
 
         if (nBalls == 3 && !isShooting) {
             Shootmode = true;
@@ -147,14 +161,11 @@ public class SpindexSubsystem extends SubsystemBase {
         if (Math.abs(SpinPID.getPositionError()) < tolerance) {
             Spindex.setPower(0);
         } else {
-            Spindex.setPower(power + ff);
+           // Spindex.setPower(power + ff);
+            Spindex.setPower(0);
         }
 
-
-
-
-
-        FtcDashboard.getInstance().getTelemetry().addData("shootMode", Shootmode);
+      /*  FtcDashboard.getInstance().getTelemetry().addData("shootMode", Shootmode);
         FtcDashboard.getInstance().getTelemetry().addData("spindex target pos", targetPos);
         FtcDashboard.getInstance().getTelemetry().addData("spindexposDeg", spindexPosDeg);
         FtcDashboard.getInstance().getTelemetry().addData("distanciaB", distCm);
@@ -165,15 +176,31 @@ public class SpindexSubsystem extends SubsystemBase {
         FtcDashboard.getInstance().getTelemetry().addData("Patron", obeliskPattern);
         FtcDashboard.getInstance().getTelemetry().addData("GreenBPos", GrenBallPos);
         FtcDashboard.getInstance().getTelemetry().addData("Extra ball", laser.getState());
+        FtcDashboard.getInstance().getTelemetry().addData("Alpha", colorSensor.getNormalizedColors().alpha);*/
+    }
 
+    @Override
+    public void log(TelemetryPacket packet) {
+        packet.put("SpindexSubsystem/shootMode", Shootmode);
+        packet.put("SpindexSubsystem/spindex target pos", targetPos);
+        packet.put("SpindexSubsystem/spindexposDeg", spindexPosDeg);
+        packet.put("SpindexSubsystem/distanciaB", distCm);
+        packet.put("SpindexSubsystem/nBalls", nBalls);
+        packet.put("SpindexSubsystem/spinError", SpinPID.getPositionError());
+        packet.put("SpindexSubsystem/spindexPower", Spindex.getPower());
+        packet.put("SpindexSubsystem/DetectedColor", detectedColor);
+        packet.put("SpindexSubsystem/Patron", obeliskPattern);
+        packet.put("SpindexSubsystem/GreenBPos", GrenBallPos);
+        packet.put("SpindexSubsystem/ExtraBall", laser.getState());
 
-
-
-
-
+        packet.put("SpindexSubsystem/ColorSensor/H", h);
+        packet.put("SpindexSubsystem/ColorSensor/S", s);
+        packet.put("SpindexSubsystem/ColorSensor/V", v);
+        packet.put("SpindexSubsystem/ColorSensor/FPS", colorSensorWebcam.getFps());
     }
 
     public DetectedColor getDetectedColor() {
+        /*
         colors = colorSensor.getNormalizedColors();
 
         double r = colors.red;
@@ -185,49 +212,21 @@ public class SpindexSubsystem extends SubsystemBase {
 
 
 
+        //FtcDashboard.getInstance().getTelemetry().addData("gRatio", gRatio);
 
-        if (gRatio > 0.45 && g>r && g>b) {
+
+        if (gRatio > 0.44 && g>r && g>b) {
             return DetectedColor.Green;
         }else {
             return DetectedColor.Unknown;
         }
-
+        */
+        return DetectedColor.Unknown;
     }
-
-    public DetectedColor sampleColorBestAlpha(int samples) {
-        double bestAlpha = 0;
-        double r = 0, g = 0, b = 0;
-
-        for (int i = 0; i < samples; i++) {
-            NormalizedRGBA c = colorSensor.getNormalizedColors();
-
-            if (c.alpha > bestAlpha) {
-                bestAlpha = c.alpha;
-                r = c.red;
-                g = c.green;
-                b = c.blue;
-            }
-        }
-
-        double sum = r+g+b;
-        double gRatio = g/sum;
-
-
-
-        if (gRatio > 0.45 && g>r && g>b) {
-            return DetectedColor.Green;
-        }else {
-            return DetectedColor.Unknown;
-        }
-
-
-    }
-
 
     public boolean getExtraB() {
         return laser.getState();
     }
-
 
     public void setnBalls(int nBalls) {
         SpindexSubsystem.nBalls = nBalls;
@@ -280,7 +279,7 @@ public class SpindexSubsystem extends SubsystemBase {
 
     public boolean getBPresence() {
         distCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
-        return (distCm < 4);
+        return (distCm < 3.2 && colorSensor.getNormalizedColors().alpha > 0.047);
     }
 
     public void setTargetPos(double targetPos) {

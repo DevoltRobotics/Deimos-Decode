@@ -151,8 +151,10 @@ public class RedA extends OpModeCommand {
                 new TurretToPosCMD(turretSubsystem,-45d),
 
 
+                        new WaitCommand(300),
 
-                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
+
+                        new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
 
 
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.3)),
@@ -168,8 +170,10 @@ public class RedA extends OpModeCommand {
                         pedroSubsystem.followPathCmd(Shoot2Cycle),
                         new SpindexModeDefaultCMD(spindexSubsystem)
                 ),
+                        new WaitCommand(400),
 
-                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
+
+                        new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
                 new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.4)),
 
@@ -185,7 +189,9 @@ public class RedA extends OpModeCommand {
                         new SpindexModeDefaultCMD(spindexSubsystem)
                 ),
 
-                new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
+                        new WaitCommand(400),
+
+                        new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
                 new ParallelDeadlineGroup(
                         pedroSubsystem.followPathCmd(Pick4thCycle),
                         new TurretToPosCMD(turretSubsystem,0d),
@@ -208,11 +214,11 @@ public class RedA extends OpModeCommand {
         Pose pose = pedroSubsystem.follower.getPose();
         PedroSubsystem.robotPose = pedroSubsystem.follower.getPose();
 
-        telemetry.addData("patron",spindexSubsystem.obeliskPattern);
+      /*  telemetry.addData("patron",spindexSubsystem.obeliskPattern);
         telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());
         telemetry.addData("X", pose.getX());
         telemetry.addData("Y", pose.getY());
-        telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));
+        telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));*/
     }
 }
 

@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 
 @Config
@@ -26,6 +27,8 @@ public class shooter_test extends OpModeCommand {
 
     GamepadEx gamepadEx1;
     public static double TV = 0;
+
+    public static  double TurretPos = 0.5;
 
     public shooter_test() {
         super(Alliance.ANY);
@@ -49,7 +52,9 @@ public class shooter_test extends OpModeCommand {
                 );
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON).whenPressed(
-                new TurretToPosCMD(turretSubsystem, 100d)
+            new InstantCommand(()->{
+                turretSubsystem.SetServopos(TurretPos);
+            })
         );
 
         

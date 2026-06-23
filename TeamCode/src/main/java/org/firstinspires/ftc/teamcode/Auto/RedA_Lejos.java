@@ -165,7 +165,7 @@ public class RedA_Lejos extends OpModeCommand {
                                 new SpindexModeDefaultCMD(spindexSubsystem)
                         ),
 
-                        new WaitCommand(200),
+                        new WaitCommand(300),
                         new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
                         new ParallelDeadlineGroup(
@@ -192,7 +192,7 @@ public class RedA_Lejos extends OpModeCommand {
                         pedroSubsystem.followPathCmd(Shoot3rd),
                         new SpindexModeDefaultCMD(spindexSubsystem)),
 
-                        new WaitCommand(200),
+                        new WaitCommand(400),
                         new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
                         new TurretToPosCMD(turretSubsystem,45d),
@@ -225,10 +225,10 @@ public class RedA_Lejos extends OpModeCommand {
         PedroSubsystem.robotPose = pedroSubsystem.follower.getPose();
 
 
-        telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());
+       /* telemetry.addData("Follower busy", pedroSubsystem.follower.isBusy());
         telemetry.addData("X", pose.getX());
         telemetry.addData("Y", pose.getY());
         telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));
-        telemetry.update();
+        telemetry.update();*/
     }
 }

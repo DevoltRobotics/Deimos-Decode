@@ -22,16 +22,7 @@ public class IntakeInCMD extends CommandBase {
 
     @Override
     public void execute() {
-
-        if (spindex.getnBalls() == 3 && spindex.getExtraB() || spindex.isShooting && spindex.getExtraB()) {
-            intakeSubsystem.Out();
-        }
-        else if (spindex.getBPresence() || spindex.getnBalls() == 3) {
-            intakeSubsystem.Hold();
-        }
-        else {
             intakeSubsystem.In();
-        }
     }
 
     @Override

@@ -2,37 +2,48 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.geometry.Rotation2d;
+import com.seattlesolvers.solverslib.geometry.Translation2d;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.config.AngleKalman1D;
+import org.firstinspires.ftc.teamcode.config.LoggedSubsystem;
+import org.firstinspires.ftc.teamcode.config.PosUtils;
 
-import java.awt.font.NumericShaper;
 
 @Config
-public class TurretSubsystem extends SubsystemBase {
+public class TurretSubsystem extends LoggedSubsystem {
 
     Servo Torreta;
 
+    Translation2d RotatedTurretOffset;
+    Translation2d TurretFieldPos;
 
+    Translation2d RobotPos;
     public static double lowerLimit = -110;
     public static double upperLimit = 207.0642;
+
+    public double TurrettargetDeg = 0;
+
+
+
+    Translation2d TurretRobotPos = new Translation2d(-1.22,0);
 
 
 
     double goalX, goalY;
 
+    Pose TurretPos;
 
+    Pose FTCPos;
     public static double currentRelativePos;
-
 
     PedroSubsystem pedroSubsystem;
 
@@ -46,11 +57,13 @@ public class TurretSubsystem extends SubsystemBase {
      public double offsetY;
      public double offsetX;
 
-     public static double kF = 0.014;
+     public static double kF = 0.02;
 
      public static double LeftkF = 0.016;
 
     Alliance alliance;
+
+    Translation2d GoalPos;
 
     public void setGoalPos(double x, double y) {
         goalX = x;
@@ -58,17 +71,22 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public TurretSubsystem(HardwareMap hMap, PedroSubsystem pedroSubsystem, Alliance alliance) {
+
         Torreta = hMap.get(Servo.class, "torreta");
         Torreta.setDirection(Servo.Direction.REVERSE);
 
         this.pedroSubsystem = pedroSubsystem;
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
-            setGoalPos(130, 130);
+            setGoalPos(144, 144);
+            GoalPos = new Translation2d(goalX,goalY);
         } else if (alliance == Alliance.BLUE) {
-            setGoalPos(13, 130);
+            setGoalPos(0, 144);
+            GoalPos = new Translation2d(goalX,goalY);
         } else {
             setGoalPos(130, 130);
+            GoalPos = new Translation2d(goalX,goalY);
+
         }
 
     }
@@ -78,30 +96,36 @@ public class TurretSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Pose robotPos = pedroSubsystem.follower.getPose();
-
+        RobotPos = new Translation2d(robotPos.getX(),robotPos.getY());
 
         heading = robotPos.getHeading();
+        Rotation2d rotation2d = new Rotation2d(heading);
 
-        offsetX = (0 * Math.cos(heading)) + (-1.22*Math.sin(heading));
-        offsetY = (-0*Math.sin(heading)) + (-1.22 * Math.cos(heading));
+        RotatedTurretOffset = TurretRobotPos.rotateBy(rotation2d);
 
-        double dx = goalX - (robotPos.getX() + offsetX); //offsetx
-        double dy = goalY - (robotPos.getY() + offsetY); //offsety
+        TurretFieldPos = RobotPos.plus(RotatedTurretOffset);
 
-        robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));//direction
+        double dx = goalX - TurretFieldPos.getX();
+        double dy = goalY - TurretFieldPos.getY();
+
+        Translation2d TurrettoGoal = GoalPos.minus(TurretFieldPos);
+
+        robotToGoalAngle = Math.toDegrees(Math.atan2(dy,dx));//direction
         distanceToGoal = Math.hypot(dx,dy);//magnitude
 
-        turretToGoalAngle =AngleUnit.normalizeDegrees(Math.toDegrees(robotPos.getHeading()) - robotToGoalAngle );
+        turretToGoalAngle = AngleUnit.normalizeDegrees(Math.toDegrees(robotPos.getHeading()) - robotToGoalAngle);
 
-        FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
+        TurretPos = new Pose(TurretFieldPos.getX(), TurretFieldPos.getY(), Math.toRadians(robotToGoalAngle));
+
+        FTCPos = PosUtils.PedrotoFTC(TurretPos);
+
+
+
+      /*  FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
         FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal() );
-        FtcDashboard.getInstance().getTelemetry().addData("Servo pos", Torreta.getPosition() );
+        FtcDashboard.getInstance().getTelemetry().addData("Servo pos", Torreta.getPosition() );*/
 
     }
-
-
-
-
 
     public void TurretSetPos(double PosDeg){
         double servoPos = (PosDeg - lowerLimit) / (upperLimit - lowerLimit);
@@ -114,6 +138,14 @@ public class TurretSubsystem extends SubsystemBase {
 
     }
 
+    public double convertDegreestoServoPos(double deg){
+        return deg*0.0031539354+0.35;
+    }
+
+    public void SetServopos (double pos){
+        Torreta.setPosition(pos);
+    }
+
     public double getTurretToGoalAngle() {
         return turretToGoalAngle;
     }
@@ -123,7 +155,11 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
 
-
-
-
+    @Override
+    public void log(TelemetryPacket packet) {
+        packet.put("Turret/Pose x", FTCPos.getX());
+        packet.put("Turret/Pose y", FTCPos.getY());
+        packet.put("Turret/Pose heading", FTCPos.getHeading());
+        packet.put("Turret/Targetpos", TurrettargetDeg);
+    }
 }

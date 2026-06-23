@@ -21,15 +21,19 @@ public class LLSubsystem extends SubsystemBase {
     private int currentPipeline = 0;
 
     public LLSubsystem(HardwareMap hMap, Alliance alliance){
-        limelight = hMap.get(Limelight3A.class, "limelight");
+        limelight = null; // hMap.get(Limelight3A.class, "limelight");
         this.alliance = alliance;
 
-        limelight.setPollRateHz(100);
-        limelight.start();
+        if(limelight != null) {
+            limelight.setPollRateHz(100);
+            limelight.start();
+        }
     }
 
     @Override
-    public void periodic(){
+    public void periodic() {
+        if(limelight == null) return;
+
         if(lastPipeline != currentPipeline) {
             limelight.pipelineSwitch(currentPipeline);
         }
@@ -37,7 +41,7 @@ public class LLSubsystem extends SubsystemBase {
 
         result = limelight.getLatestResult();
 
-        if (result != null && result.isValid()) {
+       /* if (result != null && result.isValid()) {
             if(currentPipeline == 0 || currentPipeline == 2) {
                 FtcDashboard.getInstance().getTelemetry().addData("Limelight Alliance tA", getAllianceTA());
                 FtcDashboard.getInstance().getTelemetry().addData("Limelight Alliance tX", getAllianceTX());
@@ -48,7 +52,7 @@ public class LLSubsystem extends SubsystemBase {
             FtcDashboard.getInstance().getTelemetry().addData("Limelight", "No Targets");
         }
 
-        FtcDashboard.getInstance().getTelemetry().addData("pipe",currentPipeline);
+        FtcDashboard.getInstance().getTelemetry().addData("pipe",currentPipeline);*/
     }
 
     public Double getAllianceTA() {

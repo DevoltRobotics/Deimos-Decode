@@ -44,19 +44,21 @@ public class TurretToPosCMD extends CommandBase {
             return;
         }
 
-        if ( targetPos > TurretSubsystem.upperLimit){
+       /* if ( targetPos > TurretSubsystem.upperLimit){
           Realtarget =  targetPos - 360;
         } else if (targetPos < TurretSubsystem.lowerLimit) {
             Realtarget = targetPos + 360;
         }else {
             Realtarget = targetPos;
-        }
+        }*/
+
+        Realtarget = targetPos;
+
+        subsystem.TurrettargetDeg = Realtarget;
+        subsystem.SetServopos(subsystem.convertDegreestoServoPos(Realtarget));
 
 
-        subsystem.TurretSetPos(Realtarget);
-
-
-        FtcDashboard.getInstance().getTelemetry().addData("turret target", Realtarget);
+       // FtcDashboard.getInstance().getTelemetry().addData("turret target", Realtarget);
 
     }
 

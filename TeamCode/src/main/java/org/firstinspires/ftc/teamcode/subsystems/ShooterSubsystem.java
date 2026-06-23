@@ -51,8 +51,8 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.setPower(power);
         shooter2.setPower(power);
 
-        FtcDashboard.getInstance().getTelemetry().addData("shooter target",TargetVelocity);
-        FtcDashboard.getInstance().getTelemetry().addData("shooter current",CurrentVelocity);
+      /*  FtcDashboard.getInstance().getTelemetry().addData("shooter target",TargetVelocity);
+        FtcDashboard.getInstance().getTelemetry().addData("shooter current",CurrentVelocity);*/
     }
 
     public double getCurrentVelocity() {

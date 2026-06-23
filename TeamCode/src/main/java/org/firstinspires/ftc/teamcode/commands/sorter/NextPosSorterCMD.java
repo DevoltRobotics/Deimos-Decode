@@ -20,7 +20,7 @@ public class NextPosSorterCMD extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return Math.abs(spindex.SpinPID.getPositionError()) <= 1;
+        return Math.abs(spindex.SpinPID.getPositionError()) <= 1.1;
     }
 
 
