@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -11,9 +12,11 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
+import org.firstinspires.ftc.teamcode.config.LoggedSubsystem;
+
 @Config
 @Configurable
-public class ShooterSubsystem extends SubsystemBase {
+public class ShooterSubsystem extends LoggedSubsystem {
 
 
     public DcMotorEx shooter;
@@ -21,8 +24,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public PIDFController shooterPIDF;
 
-    public static PIDFCoefficients SCoeffs = new PIDFCoefficients(0.005,0,0,0);
-    public static double kV = 0.000505;
+    public static PIDFCoefficients SCoeffs = new PIDFCoefficients(0.0047,0,0,0);
+    public static double kV = 0.00066;
 
     private double TargetVelocity = 0;
 
@@ -65,5 +68,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public double getTargetVelocity(){
         return TargetVelocity;
+    }
+
+    @Override
+    public void log(TelemetryPacket packet) {
+        packet.put("Shooter/Target Vel",TargetVelocity);
+        packet.put("Shooter/Current Vel",getCurrentVelocity());
     }
 }

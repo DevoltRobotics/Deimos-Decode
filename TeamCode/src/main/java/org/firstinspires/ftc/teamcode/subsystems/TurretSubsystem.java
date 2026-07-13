@@ -139,7 +139,7 @@ public class TurretSubsystem extends LoggedSubsystem {
     }
 
     public double convertDegreestoServoPos(double deg){
-        return   deg*0.00327777777777777777777777777778+0.48;       //deg*0.0031539354+0.35;
+        return   deg*-0.0032+0.51;       //deg*0.0031539354+0.35;
     }
 
 
