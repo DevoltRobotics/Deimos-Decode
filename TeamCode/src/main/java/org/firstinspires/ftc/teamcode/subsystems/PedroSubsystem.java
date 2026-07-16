@@ -27,6 +27,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
 
 public class PedroSubsystem extends LoggedSubsystem {
 
+    LLSubsystem llSubsystem;
+
     public final Follower follower;
 
     public static Pose robotPose = new Pose(0,0,0);
@@ -34,7 +36,8 @@ public class PedroSubsystem extends LoggedSubsystem {
     private Alliance alliance;
 
     public PedroSubsystem(HardwareMap hardwareMap, Alliance alliance) {
-        this.follower = Constants.createFollower(hardwareMap);
+        llSubsystem = new LLSubsystem(hardwareMap,alliance);
+        this.follower = Constants.createFollower(hardwareMap,llSubsystem.limelight,false);
         this.alliance = alliance;
     }
 
@@ -42,7 +45,7 @@ public class PedroSubsystem extends LoggedSubsystem {
     public void periodic() {
         follower.update();
         Tuning.follower = follower;
-        Tuning.draw();
+        Tuning.drawCurrent();
     }
 
     public Command followPathCmd(Path path) {

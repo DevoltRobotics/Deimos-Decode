@@ -30,6 +30,8 @@ public class shooter_test extends OpModeCommand {
 
     public static  double TurretPos = 0.5;
 
+    public static  double Hoodpos = 0;
+
     public shooter_test() {
         super(Alliance.ANY);
     }
@@ -61,6 +63,10 @@ public class shooter_test extends OpModeCommand {
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new ShooterShootCmd(shooterSubsystem, () -> TV));
         gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new ShooterAutoOdoCMD(shooterSubsystem,turretSubsystem));
+
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.X).whenPressed(new InstantCommand(()->{
+            shooterSubsystem.setHood(Hoodpos);
+        }));
 
         gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenActive(new UpAndDownCMD(hookSubsystem,spindexSubsystem));
         gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenActive(new NextPosSorterCMD(spindexSubsystem));

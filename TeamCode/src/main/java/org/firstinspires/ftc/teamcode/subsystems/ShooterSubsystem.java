@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
@@ -29,9 +30,13 @@ public class ShooterSubsystem extends LoggedSubsystem {
 
     private double TargetVelocity = 0;
 
+    public Servo hood;
+
     public ShooterSubsystem(HardwareMap hMap){
         shooter = hMap.get(DcMotorEx.class,"shooter");
         shooter2 = hMap.get(DcMotorEx.class,"shooter2");
+
+        hood = hMap.get(Servo.class,"hood");
 
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -68,6 +73,10 @@ public class ShooterSubsystem extends LoggedSubsystem {
 
     public double getTargetVelocity(){
         return TargetVelocity;
+    }
+
+    public void setHood(double ServoPos){
+        hood.setPosition(ServoPos);
     }
 
     @Override

@@ -163,5 +163,6 @@ public class TurretSubsystem extends LoggedSubsystem {
         packet.put("Turret/Pose y", FTCPos.getY());
         packet.put("Turret/Pose heading", FTCPos.getHeading());
         packet.put("Turret/Targetpos", TurrettargetDeg);
+        packet.put("Turret/Distance to goal",distanceToGoal);
     }
 }

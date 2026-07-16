@@ -19,10 +19,7 @@ public class intakeDefaultCMD extends CommandBase {
     @Override
     public void execute() {
 
-        if (spindex.getnBalls() == 3 && spindex.getExtraB() || spindex.isShooting && spindex.getExtraB()) {
-            intake.Out();
-        }
-        else if (spindex.getBPresence() || spindex.getnBalls() == 3) {
+        if (spindex.getBPresence() || spindex.getnBalls() == 3) {
             intake.Hold();
         }
         else {

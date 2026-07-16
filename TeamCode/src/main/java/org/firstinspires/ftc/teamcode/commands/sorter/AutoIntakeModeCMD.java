@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.commands.sorter;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
@@ -46,7 +45,7 @@ public class AutoIntakeModeCMD extends CommandBase {
              if (spindex.getDetectedColor() == SpindexSubsystem.DetectedColor.Green){
                  spindex.GrenBallPos = (spindex.getTargetPos() + 180);
              }
-            spindex.advanceOneIndex();
+            spindex.advanceOneSorting();
             spindex.addnBalls();
 
             objectLatched = true;
@@ -55,7 +54,7 @@ public class AutoIntakeModeCMD extends CommandBase {
 
         double dt = nowMs - lastTriggerTimeMs;
 
-        if (!spindex.getBPresence() && dt > SpindexSubsystem.TRIGGER_COOLDOWN_MS && spindex.DeltaAngleDeg < 60) {
+        if (!spindex.getBPresence() && dt > SpindexSubsystem.TRIGGER_COOLDOWN_MS && spindex.error < 60) {
             objectLatched = false;
         }
     }

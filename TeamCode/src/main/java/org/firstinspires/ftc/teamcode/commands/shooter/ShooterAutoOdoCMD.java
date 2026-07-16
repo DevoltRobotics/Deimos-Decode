@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 public class ShooterAutoOdoCMD extends CommandBase {
 
     private static InterpLUT VelocityLUT = new InterpLUT();
+    private static  InterpLUT AngleLUT = new InterpLUT();
 
     static {
         VelocityLUT.add(0, 0);
@@ -28,7 +29,25 @@ public class ShooterAutoOdoCMD extends CommandBase {
 
 
         VelocityLUT.createLUT();
+
+        AngleLUT.add(0,0);
+
+        AngleLUT.add(36,0.1);
+        AngleLUT.add(37,0.2);
+        AngleLUT.add(38,0.3);
+        AngleLUT.add(39,0.4);
+        AngleLUT.add(40,0.5);
+        AngleLUT.add(41,0.6);
+        AngleLUT.add(42,0.7);
+        AngleLUT.add(43,0.8);
+
+        AngleLUT.add(1000000000,100000);
+
+        AngleLUT.createLUT();
+
     }
+
+
 
     double distance;
     private final ShooterSubsystem subsystem;
@@ -48,8 +67,10 @@ public class ShooterAutoOdoCMD extends CommandBase {
         distance = turretSubsystem.getDistanceToGoal();
 
         double velocity = VelocityLUT.get(distance);
+        double HoodPos = AngleLUT.get(distance);
 
         subsystem.setTargetVelocity(Range.clip(velocity, 1100,1570));
+        subsystem.setHood(Range.clip(HoodPos,0,1));
 
 
     }

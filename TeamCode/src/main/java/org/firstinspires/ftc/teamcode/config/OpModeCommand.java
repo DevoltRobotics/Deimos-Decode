@@ -64,13 +64,13 @@ public abstract class OpModeCommand extends OpMode {
         CommandScheduler.getInstance().reset();
 
         subsystems = List.of(
+                llSubsystem = new LLSubsystem(hardwareMap, alliance),
                 pedroSubsystem = new PedroSubsystem(hardwareMap, alliance),
                 hookSubsystem = new HookSubsystem(hardwareMap),
                 intakeSubsystem = new IntakeSubsystem(hardwareMap),
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
                 turretSubsystem = new TurretSubsystem(hardwareMap,pedroSubsystem, alliance),
                 spindexSubsystem = new SpindexSubsystem(hardwareMap),
-                llSubsystem = new LLSubsystem(hardwareMap, alliance),
                 liftSubsystem = new LiftSubsystem(hardwareMap),
                 statusLightSubsystem = new StatusLightSubsystem(hardwareMap)
 

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.commands.sorter;
 
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 
@@ -16,7 +15,7 @@ public class LastPosSorterCMD extends CommandBase {
 
     @Override
     public void initialize() {
-        spindex.returnOneIndex();
+        spindex.advanceOneshooting();
     }
 
     @Override

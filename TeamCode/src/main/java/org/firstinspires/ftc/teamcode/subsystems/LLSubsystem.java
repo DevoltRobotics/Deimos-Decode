@@ -6,6 +6,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.Pattern;
 
@@ -21,72 +22,33 @@ public class LLSubsystem extends SubsystemBase {
     private int currentPipeline = 0;
 
     public LLSubsystem(HardwareMap hMap, Alliance alliance){
-        limelight = null; // hMap.get(Limelight3A.class, "limelight");
+        limelight = hMap.get(Limelight3A.class, "limelight");
         this.alliance = alliance;
 
         if(limelight != null) {
             limelight.setPollRateHz(100);
             limelight.start();
         }
+
     }
 
     @Override
     public void periodic() {
-        if(limelight == null) return;
+        if (limelight == null) return;
 
-        if(lastPipeline != currentPipeline) {
+        if (lastPipeline != currentPipeline) {
             limelight.pipelineSwitch(currentPipeline);
         }
         lastPipeline = currentPipeline;
 
         result = limelight.getLatestResult();
 
-       /* if (result != null && result.isValid()) {
-            if(currentPipeline == 0 || currentPipeline == 2) {
-                FtcDashboard.getInstance().getTelemetry().addData("Limelight Alliance tA", getAllianceTA());
-                FtcDashboard.getInstance().getTelemetry().addData("Limelight Alliance tX", getAllianceTX());
-            } else if(currentPipeline == 1) {
-                FtcDashboard.getInstance().getTelemetry().addData("Obelisk Pattern", getObelisk());
-            }
-        } else {
-            FtcDashboard.getInstance().getTelemetry().addData("Limelight", "No Targets");
-        }
 
-        FtcDashboard.getInstance().getTelemetry().addData("pipe",currentPipeline);*/
-    }
-
-    public Double getAllianceTA() {
-        setAimingPipeline();
-
-        if (result != null && result.isValid() && !result.getFiducialResults().isEmpty()) {
-            int id = result.getFiducialResults().get(0).getFiducialId();
-
-            if (alliance == Alliance.ANY ||
-                    (alliance == Alliance.RED && id == 24) ||
-                    (alliance == Alliance.BLUE && id == 20)) {
-                return result.getTa();
-            }
-        }
-
-        return null;
     }
 
 
-    public Double getAllianceTX() {
-        setAimingPipeline();
 
-        if (result != null && result.isValid() && !result.getFiducialResults().isEmpty()) {
-            int id = result.getFiducialResults().get(0).getFiducialId();
 
-            if (alliance == Alliance.ANY ||
-                    (alliance == Alliance.RED && id == 24) ||
-                    (alliance == Alliance.BLUE && id == 20)) {
-                return result.getTy();
-            }
-        }
-
-        return null;
-    }
 
     public Pattern getObelisk() {
         setObeliskPipeline();
@@ -111,16 +73,10 @@ public class LLSubsystem extends SubsystemBase {
         currentPipeline = 1;
     }
 
-    public void setAimingPipeline() {
-        switch (alliance) {
-            case ANY:
-            case RED:
-                currentPipeline = 0;
-                break;
-            case BLUE:
-                currentPipeline = 2; // fokin sol de torreon
-                break;
-        }
+    public  void setMegaTagPipeline(){
+        currentPipeline = 0;
     }
+
+
 
 }

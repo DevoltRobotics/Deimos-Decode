@@ -7,12 +7,15 @@ import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
+import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.config.KalmanPedroLocalizer;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
@@ -47,11 +50,12 @@ public class Constants {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
-    public static Follower createFollower(HardwareMap hardwareMap) {
+    public static Follower createFollower(HardwareMap hardwareMap, Limelight3A limelight,boolean isAuto) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
                 .mecanumDrivetrain(driveConstants)
-                .pinpointLocalizer(localizerConstants)
+                .setLocalizer(new KalmanPedroLocalizer(new PinpointLocalizer(hardwareMap,localizerConstants),limelight, isAuto))
                 .build();
     }
+
 }

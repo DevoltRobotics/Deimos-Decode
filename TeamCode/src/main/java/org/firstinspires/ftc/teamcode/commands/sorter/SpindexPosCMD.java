@@ -30,7 +30,7 @@ public class SpindexPosCMD extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return spindexSubsystem.DeltaAngleDeg < 1;
+        return spindexSubsystem.error < 1;
     }
 
 }

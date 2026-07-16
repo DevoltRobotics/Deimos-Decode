@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.pedropathing.math.MathFunctions;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -14,7 +14,6 @@ import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Pattern;
 import org.firstinspires.ftc.teamcode.config.BallColorSensorPipeline;
@@ -35,6 +34,8 @@ public class SpindexSubsystem extends LoggedSubsystem {
     BallColorSensorPipeline colorSensorPipeline = new BallColorSensorPipeline();
 
     DigitalChannel laser;
+
+    public double error = 0;
 
     public enum DetectedColor {
         Purple,
@@ -83,13 +84,6 @@ public class SpindexSubsystem extends LoggedSubsystem {
 
     double ff;
 
-    double Normtarget = 0;
-
-    double DeltaAngleRad = 0;
-
-    public double DeltaAngleDeg = 0;
-
-    double Normpos = 0;
 
     public SpindexSubsystem(HardwareMap hMap) {
         laser = hMap.get(DigitalChannel.class, "laser");
@@ -111,7 +105,7 @@ public class SpindexSubsystem extends LoggedSubsystem {
                 colorSensorWebcam.setPipeline(colorSensorPipeline);
                 colorSensorWebcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT, OpenCvWebcam.StreamFormat.MJPEG);
 
-                //FtcDashboard.getInstance().startCameraStream(colorSensorWebcam, 30);
+                FtcDashboard.getInstance().startCameraStream(colorSensorWebcam, 30);
             }
 
             @Override
@@ -135,34 +129,32 @@ public class SpindexSubsystem extends LoggedSubsystem {
         SpinPID.setMinOutput(minO);
         SpinPID.setCoefficients(Spincoeffs);
 
+
+
         if (nBalls == 3 && !isShooting) {
             Shootmode = true;
         } else if (nBalls == 0 && !isShooting) {
             Shootmode = false;
         }
 
+
         nBalls = Range.clip(nBalls, 0, 3);
 
-        Normtarget = AngleUnit.normalizeDegrees(targetPos);
+
 
         spindexPosDeg = ((Spindex.getCurrentPosition() - spindexEncoderOffset) / ticks_per_rev) * 360;
 
-        Normpos = AngleUnit.normalizeDegrees(spindexPosDeg);
 
-        DeltaAngleRad = MathFunctions.getTurnDirection(Math.toRadians(Normtarget), Math.toRadians(Normpos)) * MathFunctions.getSmallestAngleDifference(Math.toRadians(Normtarget),Math.toRadians(Normpos));
-
-        DeltaAngleDeg = Math.toDegrees(DeltaAngleRad);
+        error = targetPos - spindexPosDeg;
 
         SpinPID.setSetPoint(0);
 
-        power = Math.min(SpinPID.calculate(DeltaAngleDeg), 1);
+        power = Range.clip(SpinPID.calculate(error) + Math.signum(error) * kS, -1, 1);
 
-
-        if (Math.abs(SpinPID.getPositionError()) < tolerance) {
+        if (Math.abs(error) < tolerance) {
             Spindex.setPower(0);
         } else {
-           // Spindex.setPower(power + ff);
-            Spindex.setPower(0);
+            Spindex.setPower(-power);
         }
 
       /*  FtcDashboard.getInstance().getTelemetry().addData("shootMode", Shootmode);
@@ -184,19 +176,18 @@ public class SpindexSubsystem extends LoggedSubsystem {
         packet.put("SpindexSubsystem/shootMode", Shootmode);
         packet.put("SpindexSubsystem/spindex target pos", targetPos);
         packet.put("SpindexSubsystem/spindexposDeg", spindexPosDeg);
-        packet.put("SpindexSubsystem/distanciaB", distCm);
+        packet.put("SpindexSubsystem/Bpresence", getBPresence());
         packet.put("SpindexSubsystem/nBalls", nBalls);
         packet.put("SpindexSubsystem/spinError", SpinPID.getPositionError());
         packet.put("SpindexSubsystem/spindexPower", Spindex.getPower());
         packet.put("SpindexSubsystem/DetectedColor", detectedColor);
         packet.put("SpindexSubsystem/Patron", obeliskPattern);
         packet.put("SpindexSubsystem/GreenBPos", GrenBallPos);
-        packet.put("SpindexSubsystem/ExtraBall", laser.getState());
 
         packet.put("SpindexSubsystem/ColorSensor/H", h);
         packet.put("SpindexSubsystem/ColorSensor/S", s);
         packet.put("SpindexSubsystem/ColorSensor/V", v);
-        packet.put("SpindexSubsystem/ColorSensor/FPS", colorSensorWebcam.getFps());
+       // packet.put("SpindexSubsystem/ColorSensor/FPS", colorSensorWebcam.getFps());
     }
 
     public DetectedColor getDetectedColor() {
@@ -224,9 +215,7 @@ public class SpindexSubsystem extends LoggedSubsystem {
         return DetectedColor.Unknown;
     }
 
-    public boolean getExtraB() {
-        return laser.getState();
-    }
+
 
     public void setnBalls(int nBalls) {
         SpindexSubsystem.nBalls = nBalls;
@@ -257,12 +246,16 @@ public class SpindexSubsystem extends LoggedSubsystem {
         return Shootmode;
     }
 
-    public void advanceOneIndex() {
+    public void advanceOneSorting() {
         targetPos -= 120;
     }
 
-    public void returnOneIndex() {
+    public void advanceOneshooting() {
         targetPos += 120;
+    }
+
+    public void ShootAll() {
+        targetPos += 360;
     }
 
     public int getnBalls() {
@@ -278,8 +271,7 @@ public class SpindexSubsystem extends LoggedSubsystem {
     }
 
     public boolean getBPresence() {
-        distCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
-        return (distCm < 3.2 && colorSensor.getNormalizedColors().alpha > 0.047);
+        return laser.getState();
     }
 
     public void setTargetPos(double targetPos) {
