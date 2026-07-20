@@ -8,8 +8,9 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
+import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
+import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
 import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
@@ -18,7 +19,6 @@ import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
 import org.firstinspires.ftc.teamcode.config.OpModeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
 
 @Config
@@ -61,15 +61,12 @@ public class shooter_test extends OpModeCommand {
 
         
 
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new ShooterShootCmd(shooterSubsystem, () -> TV));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new ShooterAutoOdoCMD(shooterSubsystem,turretSubsystem));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.B).toggleWhenActive(new ShooterShootCmd(shooterSubsystem, () -> TV,()->Hoodpos));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.A).toggleWhenActive(new IntakeInCMD(intakeSubsystem));
 
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.X).whenPressed(new InstantCommand(()->{
-            shooterSubsystem.setHood(Hoodpos);
-        }));
 
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenActive(new UpAndDownCMD(hookSubsystem,spindexSubsystem));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenActive(new NextPosSorterCMD(spindexSubsystem));
-        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenActive(new ShootModeCMD(spindexSubsystem));
+
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenActive(new Shoot3BallsCMD(spindexSubsystem, intakeSubsystem, ()->70));
+        gamepadEx1.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenActive(new NextPosSorterCMD(spindexSubsystem));
     }
 }

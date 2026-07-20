@@ -9,13 +9,11 @@ public class IntakeInCMD extends CommandBase {
 
     private final IntakeSubsystem intakeSubsystem;
 
-    private final SpindexSubsystem spindex;
 
-    public IntakeInCMD(IntakeSubsystem intakeSubsystem,SpindexSubsystem spindexSubsystem){
+    public IntakeInCMD(IntakeSubsystem intakeSubsystem){
 
         this.intakeSubsystem = intakeSubsystem;
         addRequirements(intakeSubsystem);
-        spindex = spindexSubsystem;
 
     }
 

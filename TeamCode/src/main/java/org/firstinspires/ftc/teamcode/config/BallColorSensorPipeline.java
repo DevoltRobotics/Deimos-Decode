@@ -22,8 +22,9 @@ public class BallColorSensorPipeline extends OpenCvPipeline {
 		if(inputRoi != null) {
 			inputRoi.release();
 		}
-	
-		Rect regionRect = new Rect(330, 120, 230, 230);
+
+        // TODO: coordenadas rectangulo
+		Rect regionRect = new Rect(180, 135, 230, 230);
 		if(regionRect != null) {
 			this.inputRoi = input.submat(regionRect);
 		} else {
@@ -41,7 +42,7 @@ public class BallColorSensorPipeline extends OpenCvPipeline {
 	
 		// "Draw Rectangles (#180)"
 		input.copyTo(inputRects);
-		Imgproc.rectangle(inputRects, new Rect(330, 120, 230, 230), inputRoiAvg, 17);
+		Imgproc.rectangle(inputRects, regionRect, inputRoiAvg, 17);
 	
 		setExportedData(new double[] { inputRoiHSVAvg.val[0], inputRoiHSVAvg.val[1], inputRoiHSVAvg.val[2] });
 		return inputRects;

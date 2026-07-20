@@ -2,26 +2,19 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
-import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.commands.intake.intakeDefaultCMD;
-import org.firstinspires.ftc.teamcode.commands.lift.LiftUpCMD;
+import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
 import org.firstinspires.ftc.teamcode.commands.light.SetAutoStatus;
 import org.firstinspires.ftc.teamcode.commands.shooter.ShooterAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.NextPosSorterCMD;
-import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
-import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
-import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.IntakeOutCMD;
-import org.firstinspires.ftc.teamcode.commands.intake.LiftDownCMD;
-import org.firstinspires.ftc.teamcode.commands.intake.LiftHoldCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.IntakeModeCMD;
-import org.firstinspires.ftc.teamcode.commands.sorter.LastPosSorterCMD;
+import org.firstinspires.ftc.teamcode.commands.sorter.ShootAllCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.SpindexModeDefaultCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretAutoOdoCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
@@ -45,7 +38,6 @@ public abstract class TeleOp extends OpModeCommand {
         Garra = new GamepadEx(gamepad2);
         
 
-        new HookDownCMD(hookSubsystem).schedule();
         new TurretToPosCMD(turretSubsystem,0d).schedule();
 
         shooterSubsystem.setDefaultCommand(new ShooterAutoOdoCMD(shooterSubsystem,turretSubsystem));
@@ -54,7 +46,6 @@ public abstract class TeleOp extends OpModeCommand {
 
         pedroSubsystem.setDefaultCommand(pedroSubsystem.fieldCentricCmd(gamepad1, alliance));
 
-        liftSubsystem.setDefaultCommand(new LiftHoldCMD(liftSubsystem));
 
 
         intakeSubsystem.setDefaultCommand(new IntakeHoldCMD(intakeSubsystem));
@@ -64,7 +55,7 @@ public abstract class TeleOp extends OpModeCommand {
         );
 
 
-        IntakeIn.whenHeld(new IntakeInCMD(intakeSubsystem,spindexSubsystem));
+        IntakeIn.whenHeld(new IntakeInCMD(intakeSubsystem));
 
         Button Turretauto = new GamepadButton(
                 Garra, GamepadKeys.Button.X
@@ -84,23 +75,17 @@ public abstract class TeleOp extends OpModeCommand {
 
         IntakeOut.whenHeld(new IntakeOutCMD(intakeSubsystem));
 
-        Button Uprobot = new GamepadButton(
-                Chasis, GamepadKeys.Button.Y
-        );
 
-        Uprobot.whenHeld(new LiftUpCMD(liftSubsystem));
 
-        Button DownRobot = new GamepadButton(
-                Chasis, GamepadKeys.Button.B
-        );
 
-        DownRobot.whenHeld(new LiftDownCMD(liftSubsystem));
+
+
 
         Button lastB = new GamepadButton(
                 Garra, GamepadKeys.Button.LEFT_BUMPER
         );
 
-        lastB.whenPressed(new LastPosSorterCMD(spindexSubsystem));
+        lastB.whenPressed(new ShootAllCMD(spindexSubsystem));
 
 
 
@@ -124,20 +109,18 @@ public abstract class TeleOp extends OpModeCommand {
         );
 
         AutoShoot.whenPressed(
-                new Shoot3BallsCMD(hookSubsystem, spindexSubsystem,()->spindexSubsystem.getPatternOffset())
+                new Shoot3BallsCMD(spindexSubsystem, intakeSubsystem, ()->spindexSubsystem.getPatternOffset())
         );
 
 
-        Trigger hookUpAndDown = new Trigger(() -> gamepad2.right_trigger >= 0.1);
-
-        hookUpAndDown.whenActive(new UpAndDownCMD(hookSubsystem, spindexSubsystem));
 
 
 
 
-        Trigger hookDown = new Trigger(() -> gamepad2.left_trigger >= 0.1);
 
-        hookDown.whenActive(new HookDownCMD(hookSubsystem));
+
+
+
 
 
     }

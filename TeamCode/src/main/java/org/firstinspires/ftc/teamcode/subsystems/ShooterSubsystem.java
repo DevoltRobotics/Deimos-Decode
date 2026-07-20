@@ -64,7 +64,7 @@ public class ShooterSubsystem extends LoggedSubsystem {
     }
 
     public double getCurrentVelocity() {
-        return -(shooter2.getVelocity());
+        return (-shooter2.getVelocity());
     }
 
     public void setTargetVelocity(double target){

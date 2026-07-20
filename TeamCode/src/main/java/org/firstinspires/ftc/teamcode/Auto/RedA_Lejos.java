@@ -8,24 +8,16 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
 import com.seattlesolvers.solverslib.command.Command;
-import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 
 import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.Pattern;
 import org.firstinspires.ftc.teamcode.commands.compound.Shoot3BallsCMD;
-import org.firstinspires.ftc.teamcode.commands.hook.HookDownCMD;
-import org.firstinspires.ftc.teamcode.commands.hook.UpAndDownCMD;
-import org.firstinspires.ftc.teamcode.commands.intake.IntakeHoldCMD;
-import org.firstinspires.ftc.teamcode.commands.intake.IntakeInCMD;
 import org.firstinspires.ftc.teamcode.commands.intake.intakeDefaultCMD;
-import org.firstinspires.ftc.teamcode.commands.shooter.ShooterShootCmd;
 import org.firstinspires.ftc.teamcode.commands.sorter.ShootModeCMD;
 import org.firstinspires.ftc.teamcode.commands.sorter.SpindexModeDefaultCMD;
 import org.firstinspires.ftc.teamcode.commands.turret.TurretToPosCMD;
@@ -142,14 +134,13 @@ public class RedA_Lejos extends OpModeCommand {
                 new SequentialCommandGroup(
                         new InstantCommand(()->shooterSubsystem.setTargetVelocity(1470)),
                         new TurretToPosCMD(turretSubsystem,0d),
-                        new HookDownCMD(hookSubsystem),
                         new RunCommand(() ->
                                 // eval obelisk here to store for the rest of the auto
                                 spindexSubsystem.obeliskPattern = llSubsystem.getObelisk()
                         ).withTimeout(1100),
                         new ShootModeCMD(spindexSubsystem),
                         new TurretToPosCMD(turretSubsystem,19d),
-                        new Shoot3BallsCMD(hookSubsystem,spindexSubsystem,()->spindexSubsystem.getPatternOffset()),
+                        new Shoot3BallsCMD(spindexSubsystem,intakeSubsystem, ()->spindexSubsystem.getPatternOffset()),
                         new InstantCommand(() -> pedroSubsystem.follower.setMaxPower(0.42)),
                         new ParallelDeadlineGroup(
                                 pedroSubsystem.followPathCmd(pick2nd),
@@ -166,7 +157,7 @@ public class RedA_Lejos extends OpModeCommand {
                         ),
 
                         new WaitCommand(300),
-                        new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
+                        new Shoot3BallsCMD(spindexSubsystem, intakeSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
                         new ParallelDeadlineGroup(
                                 pedroSubsystem.followPathCmd(Pick3rd),
@@ -193,7 +184,7 @@ public class RedA_Lejos extends OpModeCommand {
                         new SpindexModeDefaultCMD(spindexSubsystem)),
 
                         new WaitCommand(400),
-                        new Shoot3BallsCMD(hookSubsystem,spindexSubsystem, ()->spindexSubsystem.getPatternOffset()),
+                        new Shoot3BallsCMD(spindexSubsystem, intakeSubsystem, ()->spindexSubsystem.getPatternOffset()),
 
                         new TurretToPosCMD(turretSubsystem,45d),
                         pedroSubsystem.followPathCmd(park)

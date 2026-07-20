@@ -73,7 +73,7 @@ public class TurretSubsystem extends LoggedSubsystem {
     public TurretSubsystem(HardwareMap hMap, PedroSubsystem pedroSubsystem, Alliance alliance) {
 
         Torreta = hMap.get(Servo.class, "torreta");
-        Torreta.setDirection(Servo.Direction.REVERSE);
+        Torreta.setDirection(Servo.Direction.FORWARD);
 
         this.pedroSubsystem = pedroSubsystem;
         this.alliance = alliance;
@@ -84,7 +84,7 @@ public class TurretSubsystem extends LoggedSubsystem {
             setGoalPos(0, 144);
             GoalPos = new Translation2d(goalX,goalY);
         } else {
-            setGoalPos(130, 130);
+            setGoalPos(144, 144);
             GoalPos = new Translation2d(goalX,goalY);
 
         }
@@ -139,9 +139,8 @@ public class TurretSubsystem extends LoggedSubsystem {
     }
 
     public double convertDegreestoServoPos(double deg){
-        return   deg*-0.0032+0.51;       //deg*0.0031539354+0.35;
+        return deg * 0.00317;
     }
-
 
 
     public void SetServopos (double pos){

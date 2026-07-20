@@ -1,28 +1,22 @@
 package org.firstinspires.ftc.teamcode.config;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.Subsystem;
 
 import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.subsystems.HookSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LLSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.LiftSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.StatusLightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSubsystem;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public abstract class OpModeCommand extends OpMode {
@@ -33,13 +27,11 @@ public abstract class OpModeCommand extends OpMode {
 
     public SpindexSubsystem spindexSubsystem;
     public LLSubsystem llSubsystem;
-    public HookSubsystem hookSubsystem;
 
     public PedroSubsystem pedroSubsystem;
 
     public final Alliance alliance;
 
-    public LiftSubsystem liftSubsystem;
 
 
     public StatusLightSubsystem statusLightSubsystem;
@@ -66,12 +58,10 @@ public abstract class OpModeCommand extends OpMode {
         subsystems = List.of(
                 llSubsystem = new LLSubsystem(hardwareMap, alliance),
                 pedroSubsystem = new PedroSubsystem(hardwareMap, alliance),
-                hookSubsystem = new HookSubsystem(hardwareMap),
                 intakeSubsystem = new IntakeSubsystem(hardwareMap),
                 shooterSubsystem = new ShooterSubsystem(hardwareMap),
                 turretSubsystem = new TurretSubsystem(hardwareMap,pedroSubsystem, alliance),
                 spindexSubsystem = new SpindexSubsystem(hardwareMap),
-                liftSubsystem = new LiftSubsystem(hardwareMap),
                 statusLightSubsystem = new StatusLightSubsystem(hardwareMap)
 
         );

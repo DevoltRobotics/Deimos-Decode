@@ -15,7 +15,7 @@ public class IntakeModeCMD extends CommandBase {
 
     @Override
     public void initialize() {
-        spindex.setTargetPos(spindex.IntakePos);
+        spindex.setTargetPos(spindex.GetCloseIntakePos());
         done = false;
         spindex.setShootmode(false);
     }

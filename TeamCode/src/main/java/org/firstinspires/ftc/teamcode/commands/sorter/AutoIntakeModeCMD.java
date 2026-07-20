@@ -16,6 +16,7 @@ public class AutoIntakeModeCMD extends CommandBase {
 
 
 
+
     public AutoIntakeModeCMD(SpindexSubsystem spindex) {
         this.spindex = spindex;
         addRequirements(spindex);
@@ -28,7 +29,7 @@ public class AutoIntakeModeCMD extends CommandBase {
         timer.reset();
 
         if(spindex.getFirstInitIn()) {
-            spindex.setTargetPos(SpindexSubsystem.IntakePos);
+            spindex.setTargetPos(spindex.GetCloseIntakePos());
             spindex.setFirstInitIn(false);
             spindex.setFirstInitsho(true);
         }
@@ -41,20 +42,25 @@ public class AutoIntakeModeCMD extends CommandBase {
     public void execute() {
         double nowMs = timer.milliseconds();
 
-        if (spindex.getBPresence() && !objectLatched && !spindex.getShootmode()) {
+
+
+        if (spindex.getBPresence() && !objectLatched && !spindex.getShootmode() && spindex.StabaleTarget) {
              if (spindex.getDetectedColor() == SpindexSubsystem.DetectedColor.Green){
-                 spindex.GrenBallPos = (spindex.getTargetPos() + 180);
+                 spindex.GrenBallPos = (spindex.getTargetPos() + 240);
              }
             spindex.advanceOneSorting();
             spindex.addnBalls();
 
             objectLatched = true;
             lastTriggerTimeMs = nowMs;
+            if (spindex.getnBalls() == 3 && spindex.GrenBallPos < spindex.getTargetPos()){
+                spindex.GrenBallPos = (spindex.getTargetPos() + 240);
+            }
         }
 
         double dt = nowMs - lastTriggerTimeMs;
 
-        if (!spindex.getBPresence() && dt > SpindexSubsystem.TRIGGER_COOLDOWN_MS && spindex.error < 60) {
+        if (!spindex.getBPresence() && dt > SpindexSubsystem.TRIGGER_COOLDOWN_MS && spindex.error < 20) {
             objectLatched = false;
         }
     }

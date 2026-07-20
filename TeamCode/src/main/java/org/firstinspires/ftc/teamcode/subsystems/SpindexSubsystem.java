@@ -10,10 +10,13 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.FocusControl;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Pattern;
 import org.firstinspires.ftc.teamcode.config.BallColorSensorPipeline;
@@ -22,6 +25,8 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
+
+import java.util.concurrent.TimeUnit;
 
 @Config
 public class SpindexSubsystem extends LoggedSubsystem {
@@ -50,11 +55,15 @@ public class SpindexSubsystem extends LoggedSubsystem {
     public boolean isShooting = false;
     public static double IntakePos = 60;
 
-    public static double ShootPos = 0;
+    public static double ShootPos = 60;
 
-    public double GrenBallPos = 0;
+    public double GrenBallPos = 60;
 
-    public static double tolerance = 1;
+    public static double tolerance = 5;
+
+    public double ShootPower = 0;
+
+
 
 
     DcMotor Spindex;
@@ -64,9 +73,10 @@ public class SpindexSubsystem extends LoggedSubsystem {
 
     public static PIDFCoefficients Spincoeffs = new PIDFCoefficients(0.012, 0, 0.0008, 0);
 
-    public static double TRIGGER_COOLDOWN_MS = 200;             // anti rebote tiempo
+    public static double TRIGGER_COOLDOWN_MS = 300;             // anti rebote tiempo
     private double targetPos;
     private boolean Shootmode = false;     // TRUE = modo manual/tiro; FALSE = modo indexar auto
+    private ElapsedTime nBallsCooldown = new ElapsedTime();
     public static int nBalls = 0; // CONTAODR INTERNO
 
     public boolean FirstInitIn = true;
@@ -83,6 +93,8 @@ public class SpindexSubsystem extends LoggedSubsystem {
     public static double minO = 0.087;
 
     double ff;
+
+    public boolean StabaleTarget = false;
 
 
     public SpindexSubsystem(HardwareMap hMap) {
@@ -104,6 +116,10 @@ public class SpindexSubsystem extends LoggedSubsystem {
             public void onOpened() {
                 colorSensorWebcam.setPipeline(colorSensorPipeline);
                 colorSensorWebcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT, OpenCvWebcam.StreamFormat.MJPEG);
+                colorSensorWebcam.getExposureControl().setExposure(40, TimeUnit.MILLISECONDS);
+
+                colorSensorWebcam.getFocusControl().setMode(FocusControl.Mode.Fixed);
+                colorSensorWebcam.getFocusControl().setFocusLength(10);
 
                 FtcDashboard.getInstance().startCameraStream(colorSensorWebcam, 30);
             }
@@ -112,9 +128,9 @@ public class SpindexSubsystem extends LoggedSubsystem {
             public void onError(int errorCode) {}
         });
 
-        setTargetPos(IntakePos);
+        setTargetPos(GetCloseIntakePos());
         SpinPID = new PIDFController(Spincoeffs);
-        SpinPID.setTolerance(2);
+        SpinPID.setTolerance(tolerance);
         SpinPID.setMinOutput(minO);
     }
 
@@ -129,33 +145,35 @@ public class SpindexSubsystem extends LoggedSubsystem {
         SpinPID.setMinOutput(minO);
         SpinPID.setCoefficients(Spincoeffs);
 
-
-
         if (nBalls == 3 && !isShooting) {
             Shootmode = true;
         } else if (nBalls == 0 && !isShooting) {
             Shootmode = false;
         }
 
-
         nBalls = Range.clip(nBalls, 0, 3);
 
-
-
-        spindexPosDeg = ((Spindex.getCurrentPosition() - spindexEncoderOffset) / ticks_per_rev) * 360;
-
+        spindexPosDeg = (Spindex.getCurrentPosition() - spindexEncoderOffset) / ticks_per_rev * 360;
 
         error = targetPos - spindexPosDeg;
 
         SpinPID.setSetPoint(0);
 
-        power = Range.clip(SpinPID.calculate(error) + Math.signum(error) * kS, -1, 1);
 
-        if (Math.abs(error) < tolerance) {
+
+        power = Range.clip(SpinPID.calculate(error) + (Math.signum(error) * kS), -0.6, 0.6);
+
+        if (isShooting){
+            Spindex.setPower(ShootPower);
+            nBallsCooldown.reset();
+        } else if (Math.abs(error) < tolerance && !isShooting) {
             Spindex.setPower(0);
-        } else {
+        } else if (!isShooting){
             Spindex.setPower(-power);
+            nBallsCooldown.reset();
         }
+
+        StabaleTarget = nBallsCooldown.milliseconds() >= 400;
 
       /*  FtcDashboard.getInstance().getTelemetry().addData("shootMode", Shootmode);
         FtcDashboard.getInstance().getTelemetry().addData("spindex target pos", targetPos);
@@ -174,6 +192,7 @@ public class SpindexSubsystem extends LoggedSubsystem {
     @Override
     public void log(TelemetryPacket packet) {
         packet.put("SpindexSubsystem/shootMode", Shootmode);
+        packet.put("SpindexSubsystem/isShooting", isShooting);
         packet.put("SpindexSubsystem/spindex target pos", targetPos);
         packet.put("SpindexSubsystem/spindexposDeg", spindexPosDeg);
         packet.put("SpindexSubsystem/Bpresence", getBPresence());
@@ -183,6 +202,7 @@ public class SpindexSubsystem extends LoggedSubsystem {
         packet.put("SpindexSubsystem/DetectedColor", detectedColor);
         packet.put("SpindexSubsystem/Patron", obeliskPattern);
         packet.put("SpindexSubsystem/GreenBPos", GrenBallPos);
+        packet.put("SpindexSubsystem/IntakePos", IntakePos);
 
         packet.put("SpindexSubsystem/ColorSensor/H", h);
         packet.put("SpindexSubsystem/ColorSensor/S", s);
@@ -247,15 +267,15 @@ public class SpindexSubsystem extends LoggedSubsystem {
     }
 
     public void advanceOneSorting() {
-        targetPos -= 120;
-    }
-
-    public void advanceOneshooting() {
         targetPos += 120;
     }
 
+    public void advanceOneshooting() {
+        targetPos -= 120;
+    }
+
     public void ShootAll() {
-        targetPos += 360;
+        targetPos -= 450;
     }
 
     public int getnBalls() {
@@ -286,11 +306,21 @@ public class SpindexSubsystem extends LoggedSubsystem {
         this.isShooting = isShooting;
     }
 
+    public double GetCloseIntakePos() {
+
+        double currentPosition = (Spindex.getCurrentPosition() - spindexEncoderOffset) / ticks_per_rev * 360.0;
+
+        double nextIntakePosition = 60 + Math.ceil((currentPosition - 60) / 120) * 120;
+
+        IntakePos = nextIntakePosition;
+
+        return IntakePos;
+    }
     public double getPatternOffset() {
         if (obeliskPattern == Pattern.PGP) {
             return GrenBallPos + 120;
         } else if (obeliskPattern == Pattern.PPG) {
-            return GrenBallPos - 120;
+            return GrenBallPos + 240;
         } else if (obeliskPattern == Pattern.GPP) {
             return GrenBallPos;
         } else {
@@ -304,9 +334,9 @@ public class SpindexSubsystem extends LoggedSubsystem {
 
     public double getPatternOffsetShootcMode() {
         if (obeliskPattern == Pattern.PGP) {
-            return GrenBallPos + 120;
+            return GrenBallPos + 240;
         } else if (obeliskPattern == Pattern.PPG) {
-            return GrenBallPos - 120;
+            return GrenBallPos + 120;
         } else if (obeliskPattern == Pattern.GPP) {
             return GrenBallPos;
         } else {
